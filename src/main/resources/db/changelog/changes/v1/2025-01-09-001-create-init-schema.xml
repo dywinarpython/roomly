@@ -18,13 +18,13 @@
             <column name="room_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="start_time" type="timestamp(6)">
+            <column name="start_time" type="date">
                 <constraints nullable="false"/>
             </column>
-            <column name="end_time" type="timestamp(6)">
+            <column name="end_time" type="date">
                 <constraints nullable="false"/>
             </column>
-            <column name="prepayment" type="bigint">
+            <column name="prepayment" type="numeric(10, 2)">
                 <constraints nullable="false"/>
             </column>
             <column name="price" type="numeric(10, 2)">
@@ -41,8 +41,13 @@
             <column name="address" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
+            <column name="owner" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prepayment_percentage" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
-
         <createTable tableName="room">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true"/>
