@@ -1,0 +1,22 @@
+server:
+  port: 8000
+spring:
+  application:
+    name: roomly
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/roomly}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123456}
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-master.xml
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URI:http://localhost:8080/realms/roomly}
+

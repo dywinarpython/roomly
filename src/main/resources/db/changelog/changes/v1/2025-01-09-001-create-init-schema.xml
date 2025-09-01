@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+    <changeSet id="2025-01-09-001-create-init-schema" author="Dywinar">
+        <createTable tableName="booking">
+            <column name="id" autoIncrement="true" type="bigint">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_time" type="timestamp(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="room_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="timestamp(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="timestamp(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prepayment" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="numeric(10, 2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="hotel">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="room">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hotel_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count_room" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="floor" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_day" type="numeric(10, 2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="hotel_media">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="hotel_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="media_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="room_media">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="room_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="media_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="media">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="media_type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addForeignKeyConstraint baseTableName="booking" baseColumnNames="room_id" constraintName="fk_booking_room" referencedTableName="room"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="room" baseColumnNames="hotel_id" constraintName="fk_room_hotel" referencedTableName="hotel"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="hotel_media" baseColumnNames="hotel_id" constraintName="fk_hotel_media_hotel" referencedTableName="hotel"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="hotel_media" baseColumnNames="media_id" constraintName="fk_hotel_media_media" referencedTableName="media"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="room_media" baseColumnNames="room_id" constraintName="fk_room_media_hotel" referencedTableName="room"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="room_media" baseColumnNames="media_id" constraintName="fk_room_media_media" referencedTableName="media"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>
