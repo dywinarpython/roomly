@@ -4,6 +4,10 @@ spring:
   application:
     name: roomly
   jpa:
+    show-sql: true
+    properties:
+        hibernate.format_sql: true
+        hibernate.use_sql_comments: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -20,3 +24,6 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_URI:http://localhost:8080/realms/roomly}
 
+logging:
+  level:
+    org.springframework.security: DEBUG

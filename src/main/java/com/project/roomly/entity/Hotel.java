@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,6 +36,9 @@ public class Hotel {
     @Max(100)
     private Integer prepaymentPercentage;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "hotel")
+    private List<Room> roomList;
+
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -43,4 +47,6 @@ public class Hotel {
             inverseJoinColumns = @JoinColumn(name = "media_id")
     )
     private Set<Media> media;
+
+
 }
