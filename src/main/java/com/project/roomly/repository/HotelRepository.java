@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,8 +25,10 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 
 
+
     @Query("select new com.project.roomly.dto.Hotel.ResponseHotelDto(h.name, h.address) from Hotel h where h.id = :hotelId")
     Optional<ResponseHotelDto> findHotel(@Param("hotelId") Long hotelId);
+
 
 
 

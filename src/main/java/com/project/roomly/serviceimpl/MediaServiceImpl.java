@@ -1,6 +1,7 @@
 package com.project.roomly.serviceimpl;
 
 import com.project.roomly.dto.Media.MediaDto;
+import com.project.roomly.dto.Media.RoomsMediaDto;
 import com.project.roomly.repository.MediaRepository;
 import com.project.roomly.service.MediaService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,11 @@ public class MediaServiceImpl implements MediaService {
     @Override
     public List<MediaDto> getMediaDtoByRoomId(Long roomId) {
         return mediaRepository.findMediaByRoomId(roomId);
+    }
+
+    @Override
+    public List<RoomsMediaDto> getMediaByRoomsId(List<Long> roomsId) {
+        return mediaRepository.findMediasByRoomsId(roomsId);
     }
 
 }

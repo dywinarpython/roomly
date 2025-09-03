@@ -2,6 +2,7 @@ package com.project.roomly.controller;
 
 import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Room.RoomDto;
+import com.project.roomly.dto.Room.SetRoomDto;
 import com.project.roomly.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,14 +21,14 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/room")
-@Tag(name = "Управление комнатами")
+@Tag(name = "Управление номерами")
 public class RoomController {
 
     private final RoomService roomService;
 
 
     @Operation(
-            summary = "Создания комнаты",
+            summary = "Создания номера",
             responses = @ApiResponse(responseCode = "201")
     )
     @PostMapping
@@ -38,7 +39,7 @@ public class RoomController {
 
 
     @Operation(
-            summary = "Удаление комнаты",
+            summary = "Удаление номера",
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
     )
     @DeleteMapping("/{id}")
@@ -49,11 +50,21 @@ public class RoomController {
 
 
     @Operation(
-            summary = "Получения информации комнаты",
+            summary = "Получения информации номера",
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResponseRoomMediaDto.class)))
     )
     @GetMapping("/{id}")
     public ResponseEntity<ResponseRoomMediaDto> getHotel(@PathVariable Long id){
         return ResponseEntity.ok(roomService.getRoom(id));
+    }
+
+    @Operation(
+            summary = "Изменение номера",
+            responses = @ApiResponse(responseCode = "200")
+    )
+    @PatchMapping
+    public ResponseEntity<Map<String, String>> setRoom(@RequestBody SetRoomDto setRoomDto, @AuthenticationPrincipal Jwt jwt){
+        roomService.setRoom(setRoomDto, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "The changes were successful!"));
     }
 }

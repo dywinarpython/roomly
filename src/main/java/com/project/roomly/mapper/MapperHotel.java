@@ -1,11 +1,9 @@
 package com.project.roomly.mapper;
 
 import com.project.roomly.dto.Hotel.HotelDto;
+import com.project.roomly.dto.Hotel.SetHotelDto;
 import com.project.roomly.entity.Hotel;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 
 import java.util.UUID;
 
@@ -19,4 +17,11 @@ public interface MapperHotel {
     default UUID stringToUUID(@Context String uuid){
         return UUID.fromString(uuid);
     }
+
+    @Mappings({
+            @Mapping(target = "name", source = "name", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
+            @Mapping(target = "address", source = "address", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
+            @Mapping(target = "prepaymentPercentage", source = "prepaymentPercentage", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    })
+    void updateHotelField(SetHotelDto setHotelDto, @MappingTarget Hotel hotel);
 }

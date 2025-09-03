@@ -2,8 +2,11 @@ package com.project.roomly.serviceimpl;
 
 import com.project.roomly.dto.Media.MediaDto;
 import com.project.roomly.dto.Media.ResponseRoomMediaDto;
+import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
+import com.project.roomly.dto.Media.RoomsMediaDto;
 import com.project.roomly.dto.Room.ResponseRoomDto;
 import com.project.roomly.dto.Room.RoomDto;
+import com.project.roomly.dto.Room.SetRoomDto;
 import com.project.roomly.entity.Hotel;
 import com.project.roomly.entity.Room;
 import com.project.roomly.mapper.MapperRoom;
@@ -12,15 +15,14 @@ import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
 import com.project.roomly.service.RoomService;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +62,18 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    @Transactional
+    public void setRoom(SetRoomDto setRoomDto, String uuid) {
+        checkOwnerByRoomId(setRoomDto.roomId(), uuid);
+        Room room = entityManager.getReference(Room.class, setRoomDto.roomId());
+        if (setRoomDto.countRoom() == null && setRoomDto.name() == null &&
+                setRoomDto.floor() == null && setRoomDto.priceDay() == null) {
+            throw new ValidationException("Not a single field has been updated!");
+        }
+        mapperRoom.updateRoomField(setRoomDto, room);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public ResponseRoomMediaDto getRoom(Long roomId) {
         Optional<ResponseRoomDto> optionalResponseRoomDto = roomRepository.findRoom(roomId);
@@ -69,5 +83,32 @@ public class RoomServiceImpl implements RoomService {
         ResponseRoomDto responseHotelDto = optionalResponseRoomDto.get();
         List<MediaDto> mediaDtoList = mediaService.getMediaDtoByRoomId(roomId);
         return new ResponseRoomMediaDto(responseHotelDto, mediaDtoList);
+    }
+
+    @Override
+    public ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId) {
+        List<ResponseRoomDto> roomList = roomRepository.findRoomsByHotelId(hotelId);
+        if (roomList.isEmpty()){
+            return new ResponseRoomsMediaDto(List.of());
+        }
+        List<RoomsMediaDto> mediaList = mediaService.getMediaByRoomsId(roomList.stream().map(ResponseRoomDto::id).toList());
+
+        Map<Long, List<RoomsMediaDto>> allRoomsMedia = mediaList.stream().collect(Collectors.groupingBy(RoomsMediaDto::roomId, LinkedHashMap::new, Collectors.toList()));
+        return new ResponseRoomsMediaDto(roomList.stream().map(room -> new ResponseRoomMediaDto(
+                new ResponseRoomDto(room.id(), room.name(), room.countRoom(), room.priceDay(), room.floor()),
+                allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url(), media.mediaType())).toList()
+        )).toList());
+    }
+
+    @Transactional(readOnly = true)
+    private void checkOwnerByRoomId(Long roomId, String uuid) {
+        boolean exists = roomRepository.existsByRoomIdAndOwner(roomId, UUID.fromString(uuid));
+        if(!exists){
+            if(roomRepository.existsById(roomId)){
+                throw new AccessDeniedException("Access is denied");
+            } else {
+                throw new NoSuchElementException("Room is not found!");
+            }
+        }
     }
 }

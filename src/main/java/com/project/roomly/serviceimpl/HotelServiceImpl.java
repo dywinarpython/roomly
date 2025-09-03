@@ -2,21 +2,21 @@ package com.project.roomly.serviceimpl;
 
 import com.project.roomly.dto.Hotel.HotelDto;
 import com.project.roomly.dto.Hotel.ResponseHotelDto;
-import com.project.roomly.dto.Media.MediaDto;
-import com.project.roomly.dto.Media.ResponseHotelMediaDto;
+import com.project.roomly.dto.Hotel.SetHotelDto;
+import com.project.roomly.dto.Media.*;
+import com.project.roomly.entity.Hotel;
 import com.project.roomly.mapper.MapperHotel;
 import com.project.roomly.repository.HotelRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
+import jakarta.persistence.EntityManager;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +27,9 @@ public class HotelServiceImpl implements HotelService {
     private final MapperHotel mapperHotel;
 
     private final MediaService mediaService;
+
+    private final EntityManager entityManager;
+
 
 
     @Override
@@ -46,6 +49,17 @@ public class HotelServiceImpl implements HotelService {
                 throw new NoSuchElementException("Hotel is not found!");
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public void setHotel(SetHotelDto setHotelDto, String uuid) {
+        checkOwnerHotel(setHotelDto.hotelId(), uuid);
+        Hotel hotel = entityManager.getReference(Hotel.class, setHotelDto.hotelId());
+        if(setHotelDto.prepaymentPercentage() == null && setHotelDto.name() == null && setHotelDto.address() == null){
+            throw new ValidationException("Not a single field has been updated!");
+        }
+        mapperHotel.updateHotelField(setHotelDto, hotel);
     }
 
     @Override
@@ -72,4 +86,6 @@ public class HotelServiceImpl implements HotelService {
         List<MediaDto> mediaDtoList = mediaService.getMediaDtoByHotelId(hotelId);
         return new ResponseHotelMediaDto(responseHotelDto, mediaDtoList);
     }
+
+
 }
