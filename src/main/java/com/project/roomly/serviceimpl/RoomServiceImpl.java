@@ -4,9 +4,8 @@ import com.project.roomly.dto.Media.MediaDto;
 import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
 import com.project.roomly.dto.Media.RoomsMediaDto;
-import com.project.roomly.dto.Room.ResponseRoomDto;
-import com.project.roomly.dto.Room.RoomDto;
-import com.project.roomly.dto.Room.SetRoomDto;
+import com.project.roomly.dto.Room.*;
+import com.project.roomly.dto.search.SearchDto;
 import com.project.roomly.entity.Hotel;
 import com.project.roomly.entity.Room;
 import com.project.roomly.mapper.MapperRoom;
@@ -73,6 +72,7 @@ public class RoomServiceImpl implements RoomService {
         mapperRoom.updateRoomField(setRoomDto, room);
     }
 
+    // TODO: добавить кеширование
     @Override
     @Transactional(readOnly = true)
     public ResponseRoomMediaDto getRoom(Long roomId) {
@@ -86,6 +86,12 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public SearchRoomsDto searchRoomsByDate(SearchDto searchDto) {
+        return new SearchRoomsDto(roomRepository.findAvailableRooms(searchDto.startTime(), searchDto.endTime()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId) {
         List<ResponseRoomDto> roomList = roomRepository.findRoomsByHotelId(hotelId);
         if (roomList.isEmpty()){
@@ -95,9 +101,15 @@ public class RoomServiceImpl implements RoomService {
 
         Map<Long, List<RoomsMediaDto>> allRoomsMedia = mediaList.stream().collect(Collectors.groupingBy(RoomsMediaDto::roomId, LinkedHashMap::new, Collectors.toList()));
         return new ResponseRoomsMediaDto(roomList.stream().map(room -> new ResponseRoomMediaDto(
-                new ResponseRoomDto(room.id(), room.name(), room.countRoom(), room.priceDay(), room.floor()),
+                new ResponseRoomDto(room.id(), room.name(), room.countRoom(), room.priceDay(), room.floor(), room.prepaymentPercentage(), room.hotelId()),
                 allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url(), media.mediaType())).toList()
         )).toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoomPaymentInfoDto getRoomPaymentInfo(Long roomId) {
+        return roomRepository.findRoomPricing(roomId).orElseThrow(() -> new NoSuchElementException("Room is not found"));
     }
 
     @Transactional(readOnly = true)

@@ -2,8 +2,11 @@ package com.project.roomly.controller;
 
 import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Room.RoomDto;
+import com.project.roomly.dto.Room.SearchRoomsDto;
 import com.project.roomly.dto.Room.SetRoomDto;
+import com.project.roomly.dto.search.SearchDto;
 import com.project.roomly.service.RoomService;
+import com.project.roomly.validation.ValidationDateBookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +29,8 @@ public class RoomController {
 
     private final RoomService roomService;
 
+    private final ValidationDateBookingService validationDateBookingService;
+
 
     @Operation(
             summary = "Создания номера",
@@ -35,6 +40,16 @@ public class RoomController {
     public ResponseEntity<Void> createRoom(@Valid @RequestBody RoomDto roomDto, @AuthenticationPrincipal Jwt jwt){
         roomService.saveRoom(roomDto, jwt.getSubject());
         return ResponseEntity.status(201).build();
+    }
+
+    @Operation(
+            summary = "Получения свободных номеров на определенную дату",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = SearchRoomsDto.class)))
+    )
+    @PostMapping("/search")
+    public ResponseEntity<SearchRoomsDto> getHotel(@Valid @RequestBody SearchDto searchDto){
+        validationDateBookingService.checkDate(searchDto.startTime(), searchDto.endTime());
+        return ResponseEntity.ok(roomService.searchRoomsByDate(searchDto));
     }
 
 
@@ -57,6 +72,8 @@ public class RoomController {
     public ResponseEntity<ResponseRoomMediaDto> getHotel(@PathVariable Long id){
         return ResponseEntity.ok(roomService.getRoom(id));
     }
+
+
 
     @Operation(
             summary = "Изменение номера",
