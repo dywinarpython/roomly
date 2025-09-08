@@ -1,17 +1,22 @@
 package com.project.roomly.mapper;
 
-import com.project.roomly.dto.Hotel.HotelDto;
+import com.project.roomly.dto.Hotel.RequestHotelDto;
 import com.project.roomly.dto.Hotel.SetHotelDto;
 import com.project.roomly.entity.Hotel;
+import com.project.roomly.entity.Media;
 import org.mapstruct.*;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface MapperHotel {
 
-    @Mapping(target = "owner", expression = "java(stringToUUID(uuid))")
-    Hotel hotelDtoToHotel(HotelDto hotelDto, @Context String uuid);
+    @Mappings(value = {
+            @Mapping(target = "owner", expression = "java(stringToUUID(uuid))"),
+            @Mapping(target = "media", expression = "java(media)")
+    })
+    Hotel hotelDtoToHotel(RequestHotelDto requestHotelDto, @Context String uuid, @Context Set<Media> media);
 
     @Named("stringToUUID")
     default UUID stringToUUID(@Context String uuid){

@@ -23,7 +23,19 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${KEYCLOAK_URI:http://localhost:8080/realms/roomly}
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 logging:
   level:
     org.springframework.security: DEBUG
+
+storage:
+  endpointUrl: https://${ENDPOINT_URI:hb.vkcloud-storage.ru}
+  region: ${REGION_STORE:ru-msk}}
+  access_key: ${ACCESS_KEY}
+  secret_key: ${SECRET_KEY}
+  bucket_name: ${BUCKET_NAME:roomly}
+  file_url_template: ${FILE_URL_TEMPLATE:https://roomly.hb.ru-msk.vkcloud-storage.ru/}

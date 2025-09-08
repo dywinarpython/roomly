@@ -5,21 +5,25 @@ import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
 import com.project.roomly.dto.Media.RoomsMediaDto;
 import com.project.roomly.dto.Room.*;
-import com.project.roomly.dto.search.SearchDto;
+import com.project.roomly.dto.Search.SearchDto;
 import com.project.roomly.entity.Hotel;
+import com.project.roomly.entity.Media;
 import com.project.roomly.entity.Room;
 import com.project.roomly.mapper.MapperRoom;
 import com.project.roomly.repository.RoomRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
 import com.project.roomly.service.RoomService;
+import com.project.roomly.storage.service.StorageService;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,13 +41,14 @@ public class RoomServiceImpl implements RoomService {
 
     private final MediaService mediaService;
 
+    private final StorageService storageService;
+
     @Override
     @Transactional
-    public void saveRoom(RoomDto roomDto, String uuid) {
+    public void saveRoom(RoomDto roomDto, MultipartFile[] media, String uuid) throws IOException {
         hotelService.checkOwnerHotel(roomDto.hotelId(), uuid);
-        Room room = mapperRoom.roomDtoToRoom(roomDto);
-        Hotel hotel = entityManager.getReference(Hotel.class, roomDto.hotelId());
-        room.setHotel(hotel);
+        Set<Media> mediaSet = storageService.uploadMedia(media);
+        Room room = mapperRoom.roomDtoToRoom(roomDto,entityManager.getReference(Hotel.class, roomDto.hotelId()), mediaSet);
         roomRepository.save(room);
     }
 
@@ -102,7 +107,7 @@ public class RoomServiceImpl implements RoomService {
         Map<Long, List<RoomsMediaDto>> allRoomsMedia = mediaList.stream().collect(Collectors.groupingBy(RoomsMediaDto::roomId, LinkedHashMap::new, Collectors.toList()));
         return new ResponseRoomsMediaDto(roomList.stream().map(room -> new ResponseRoomMediaDto(
                 new ResponseRoomDto(room.id(), room.name(), room.countRoom(), room.priceDay(), room.floor(), room.prepaymentPercentage(), room.hotelId()),
-                allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url(), media.mediaType())).toList()
+                allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url())).toList()
         )).toList());
     }
 

@@ -1,21 +1,25 @@
 package com.project.roomly.serviceimpl;
 
-import com.project.roomly.dto.Hotel.HotelDto;
+import com.project.roomly.dto.Hotel.RequestHotelDto;
 import com.project.roomly.dto.Hotel.ResponseHotelDto;
 import com.project.roomly.dto.Hotel.SetHotelDto;
 import com.project.roomly.dto.Media.*;
 import com.project.roomly.entity.Hotel;
+import com.project.roomly.entity.Media;
 import com.project.roomly.mapper.MapperHotel;
 import com.project.roomly.repository.HotelRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
+import com.project.roomly.storage.service.StorageService;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -30,12 +34,15 @@ public class HotelServiceImpl implements HotelService {
 
     private final EntityManager entityManager;
 
+    private final StorageService storageService;
+
 
 
     @Override
     @Transactional
-    public void saveHotel(HotelDto hotelDto, String uuid) {
-        hotelRepository.save(mapperHotel.hotelDtoToHotel(hotelDto, uuid));
+    public void saveHotel(RequestHotelDto requestHotelDto, MultipartFile[] files,  String uuid) throws IOException {
+        Set<Media> mediaSet = storageService.uploadMedia(files);
+        hotelRepository.save(mapperHotel.hotelDtoToHotel(requestHotelDto, uuid, mediaSet));
     }
 
     @Override
