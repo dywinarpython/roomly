@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "room")
@@ -35,11 +35,6 @@ public class Room {
     @Column(name = "price_day", nullable = false, precision = 10, scale = 2)
     private BigDecimal priceDay;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "room_media",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "media_id")
-    )
-    private Set<Media> media = new HashSet<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "room")
+    private List<RoomMedia> media = new ArrayList<>();
 }

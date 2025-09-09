@@ -6,10 +6,9 @@ import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
 import com.project.roomly.dto.Media.RoomsMediaDto;
 import com.project.roomly.dto.Room.*;
 import com.project.roomly.dto.Search.SearchDto;
-import com.project.roomly.entity.Hotel;
-import com.project.roomly.entity.Media;
-import com.project.roomly.entity.Room;
+import com.project.roomly.entity.*;
 import com.project.roomly.mapper.MapperRoom;
+import com.project.roomly.repository.RoomMediaRepository;
 import com.project.roomly.repository.RoomRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
@@ -33,6 +32,8 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
 
+    private final RoomMediaRepository roomMediaRepository;
+
     private final MapperRoom mapperRoom;
 
     private final HotelService hotelService;
@@ -46,10 +47,11 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void saveRoom(RoomDto roomDto, MultipartFile[] media, String uuid) throws IOException {
-        hotelService.checkOwnerHotel(roomDto.hotelId(), uuid);
-        Set<Media> mediaSet = storageService.uploadMedia(media);
-        Room room = mapperRoom.roomDtoToRoom(roomDto,entityManager.getReference(Hotel.class, roomDto.hotelId()), mediaSet);
-        roomRepository.save(room);
+       hotelService.checkOwnerHotel(roomDto.hotelId(), uuid);
+        Room room = roomRepository.save(mapperRoom.roomDtoToRoom(roomDto,entityManager.getReference(Hotel.class, roomDto.hotelId())));
+       List<String> keyMedia = storageService.uploadMedia(media);
+       List<RoomMedia> mediaList = keyMedia.stream().map(key -> new RoomMedia(key, room)).toList();
+       roomMediaRepository.saveAll(mediaList);
     }
 
     @Override

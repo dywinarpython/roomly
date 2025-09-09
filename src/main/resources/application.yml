@@ -1,13 +1,20 @@
 server:
   port: 8000
+
 spring:
   application:
     name: roomly
   jpa:
     show-sql: true
     properties:
-        hibernate.format_sql: true
-        hibernate.use_sql_comments: true
+      hibernate:
+        use_sql_comments: true
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 20
+          batch_versioned_data: true
+          fetch_size: 100
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -34,7 +41,7 @@ logging:
 
 storage:
   endpointUrl: https://${ENDPOINT_URI:hb.vkcloud-storage.ru}
-  region: ${REGION_STORE:ru-msk}}
+  region: ${REGION_STORE:ru-msk}
   access_key: ${ACCESS_KEY}
   secret_key: ${SECRET_KEY}
   bucket_name: ${BUCKET_NAME:roomly}

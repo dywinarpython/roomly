@@ -5,8 +5,9 @@ import com.project.roomly.dto.Hotel.ResponseHotelDto;
 import com.project.roomly.dto.Hotel.SetHotelDto;
 import com.project.roomly.dto.Media.*;
 import com.project.roomly.entity.Hotel;
-import com.project.roomly.entity.Media;
+import com.project.roomly.entity.HotelMedia;
 import com.project.roomly.mapper.MapperHotel;
+import com.project.roomly.repository.HotelMediaRepository;
 import com.project.roomly.repository.HotelRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
@@ -28,6 +29,8 @@ public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
 
+    private final HotelMediaRepository hotelMediaRepository;
+
     private final MapperHotel mapperHotel;
 
     private final MediaService mediaService;
@@ -40,11 +43,12 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
-    public void saveHotel(RequestHotelDto requestHotelDto, MultipartFile[] files,  String uuid) throws IOException {
-        Set<Media> mediaSet = storageService.uploadMedia(files);
-        hotelRepository.save(mapperHotel.hotelDtoToHotel(requestHotelDto, uuid, mediaSet));
+    public void saveHotel(RequestHotelDto requestHotelDto, MultipartFile[] files, String uuid) throws IOException {
+        Hotel hotel = hotelRepository.save(mapperHotel.hotelDtoToHotel(requestHotelDto, uuid));
+        List<String> keyMedia = storageService.uploadMedia(files);
+        List<HotelMedia> mediaSet = keyMedia.stream().map(key -> new HotelMedia(key, hotel)).toList();
+        hotelMediaRepository.saveAll(mediaSet);
     }
-
     @Override
     @Transactional
     public void deleteHotel(Long id, String uuid) {
@@ -93,6 +97,4 @@ public class HotelServiceImpl implements HotelService {
         List<MediaDto> mediaDtoList = mediaService.getMediaDtoByHotelId(hotelId);
         return new ResponseHotelMediaDto(responseHotelDto, mediaDtoList);
     }
-
-
 }

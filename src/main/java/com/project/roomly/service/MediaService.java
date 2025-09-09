@@ -9,5 +9,6 @@ public interface MediaService {
     List<MediaDto> getMediaDtoByHotelId(Long hotelId);
     List<MediaDto> getMediaDtoByRoomId(Long roomId);
     List<RoomsMediaDto> getMediaByRoomsId(List<Long> roomsId);
-
+    void deleteMediaByHotelId(Long hotelId);
+    void deleteMediaByRoomId(Long roomId);
 }

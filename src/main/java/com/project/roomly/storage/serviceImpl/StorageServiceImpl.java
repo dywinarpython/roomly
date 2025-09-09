@@ -1,7 +1,6 @@
 package com.project.roomly.storage.serviceImpl;
 
 import com.project.roomly.dto.Media.MediaDto;
-import com.project.roomly.entity.Media;
 import com.project.roomly.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,12 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,7 +34,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public Set<Media> uploadMedia(MultipartFile[] files) throws IOException {
+    public List<String> uploadMedia(MultipartFile[] files) throws IOException {
         List<String> lsKey = new ArrayList<>();
         for (MultipartFile file: files ){
             UUID nameMedia = UUID.randomUUID();
@@ -51,7 +50,26 @@ public class StorageServiceImpl implements StorageService {
             );
             lsKey.add(key);
         }
-        return lsKey.stream().map(url -> new Media(null, url)).collect(Collectors.toSet());
+        return lsKey;
+    }
+
+    @Override
+    public void deleteMedias(List<String> keyMedia) {
+        for (String key: keyMedia){
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(key)
+                    .build()
+            );
+        }
+    }
+
+    @Override
+    public void deleteMedia(String keyMedia) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyMedia)
+                .build());
     }
 
     @Override
