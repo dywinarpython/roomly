@@ -24,14 +24,6 @@ public interface RoomMediaRepository extends JpaRepository<RoomMedia, Long> {
     )
     List<RoomsMediaDto> findMediasByRoomsId(@Param("roomsId") List<Long> roomsId);
 
-    @Query("""
-            select m.url
-            from Room r
-            join r.media m
-            where r.id in :roomsId
-            """)
-    List<String> findMediaKeysByRoomsId(@Param("roomsId") Long roomsId);
-
 
     @Query("""
             select m.url

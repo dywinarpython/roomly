@@ -22,7 +22,7 @@ public class ValidationMedia {
     }
 
     public void validationTypeMedia(MultipartFile[] files){
-        if(files.length > 10) throw new ValidationException("Максимальное количество файлов 5 (The maximum number of files is 5).");
+        if(files.length > 10) throw new ValidationException("Максимальное количество файлов 10 (The maximum number of files is 10).");
         for (MultipartFile file: files){
             String typeFile = Objects.requireNonNull(file.getContentType()).substring(file.getContentType().indexOf("/") + 1);
             if(!typeFiles.contains(typeFile)){

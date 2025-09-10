@@ -54,8 +54,8 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "201")
     )
     public ResponseEntity<Void> createRoom(@Valid @RequestPart("room") RoomDto roomDto, @RequestPart("media") MultipartFile[] media,  @AuthenticationPrincipal Jwt jwt) throws IOException {
-        roomService.saveRoom(roomDto, media, jwt.getSubject());
         validationMedia.validationTypeMedia(media);
+        roomService.saveRoom(roomDto, media, jwt.getSubject());
         return ResponseEntity.status(201).build();
     }
 
@@ -64,7 +64,7 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = SearchRoomsDto.class)))
     )
     @PostMapping("/search")
-    public ResponseEntity<SearchRoomsDto> getHotel(@Valid @RequestBody SearchDto searchDto){
+    public ResponseEntity<SearchRoomsDto> getRoom(@Valid @RequestBody SearchDto searchDto){
         validationDateBookingService.checkDate(searchDto.startTime(), searchDto.endTime());
         return ResponseEntity.ok(roomService.searchRoomsByDate(searchDto));
     }
@@ -101,7 +101,7 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> createHotel(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<Map<String, String>> deleteRoom(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
         roomService.deleteRoom(id, jwt.getSubject());
         return ResponseEntity.ok(Map.of("message", "Room is deleted"));
     }
