@@ -70,7 +70,7 @@ public class HotelController {
     )
     public ResponseEntity<Void> createMediaHotel(
             @PathVariable Long hotelId,
-            @RequestPart(value = "file")   MultipartFile media,
+            @RequestPart(value = "file", required = false)   MultipartFile media,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
         validationMedia.validationTypeMedia(new MultipartFile[]{media});

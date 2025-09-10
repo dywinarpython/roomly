@@ -53,7 +53,7 @@ public class RoomController {
             ),
             responses = @ApiResponse(responseCode = "201")
     )
-    public ResponseEntity<Void> createRoom(@Valid @RequestPart("room") RoomDto roomDto, @RequestPart("media") MultipartFile[] media,  @AuthenticationPrincipal Jwt jwt) throws IOException {
+    public ResponseEntity<Void> createRoom(@Valid @RequestPart("room") RoomDto roomDto, @RequestPart(name = "media", required = false) MultipartFile[] media,  @AuthenticationPrincipal Jwt jwt) throws IOException {
         validationMedia.validationTypeMedia(media);
         roomService.saveRoom(roomDto, media, jwt.getSubject());
         return ResponseEntity.status(201).build();
@@ -76,7 +76,7 @@ public class RoomController {
     )
     public ResponseEntity<Void> createMediaRoom(
             @PathVariable Long roomId,
-            @RequestPart(value = "file")   MultipartFile media,
+            @RequestPart(value = "file", required = false)   MultipartFile media,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
         validationMedia.validationTypeMedia(new MultipartFile[]{media});
