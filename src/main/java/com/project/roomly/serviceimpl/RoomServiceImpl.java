@@ -5,21 +5,24 @@ import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
 import com.project.roomly.dto.Media.RoomsMediaDto;
 import com.project.roomly.dto.Room.*;
-import com.project.roomly.dto.search.SearchDto;
-import com.project.roomly.entity.Hotel;
-import com.project.roomly.entity.Room;
+import com.project.roomly.dto.Search.SearchDto;
+import com.project.roomly.entity.*;
 import com.project.roomly.mapper.MapperRoom;
+import com.project.roomly.repository.RoomMediaRepository;
 import com.project.roomly.repository.RoomRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
 import com.project.roomly.service.RoomService;
+import com.project.roomly.storage.service.StorageService;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,8 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
 
+    private final RoomMediaRepository roomMediaRepository;
+
     private final MapperRoom mapperRoom;
 
     private final HotelService hotelService;
@@ -37,14 +42,16 @@ public class RoomServiceImpl implements RoomService {
 
     private final MediaService mediaService;
 
+    private final StorageService storageService;
+
     @Override
     @Transactional
-    public void saveRoom(RoomDto roomDto, String uuid) {
-        hotelService.checkOwnerHotel(roomDto.hotelId(), uuid);
-        Room room = mapperRoom.roomDtoToRoom(roomDto);
-        Hotel hotel = entityManager.getReference(Hotel.class, roomDto.hotelId());
-        room.setHotel(hotel);
-        roomRepository.save(room);
+    public void saveRoom(RoomDto roomDto, MultipartFile[] media, String uuid) throws IOException {
+       hotelService.checkOwnerHotel(roomDto.hotelId(), uuid);
+        Room room = roomRepository.save(mapperRoom.roomDtoToRoom(roomDto,entityManager.getReference(Hotel.class, roomDto.hotelId())));
+       List<String> keyMedia = storageService.uploadMedias(media);
+       List<RoomMedia> mediaList = keyMedia.stream().map(key -> new RoomMedia(key, room)).toList();
+       roomMediaRepository.saveAll(mediaList);
     }
 
     @Override
@@ -102,7 +109,7 @@ public class RoomServiceImpl implements RoomService {
         Map<Long, List<RoomsMediaDto>> allRoomsMedia = mediaList.stream().collect(Collectors.groupingBy(RoomsMediaDto::roomId, LinkedHashMap::new, Collectors.toList()));
         return new ResponseRoomsMediaDto(roomList.stream().map(room -> new ResponseRoomMediaDto(
                 new ResponseRoomDto(room.id(), room.name(), room.countRoom(), room.priceDay(), room.floor(), room.prepaymentPercentage(), room.hotelId()),
-                allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url(), media.mediaType())).toList()
+                allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url())).toList()
         )).toList());
     }
 
@@ -112,7 +119,29 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.findRoomPricing(roomId).orElseThrow(() -> new NoSuchElementException("Room is not found"));
     }
 
-    @Transactional(readOnly = true)
+
+
+    @Override
+    @Transactional
+    public void addMedia(MultipartFile media, Long roomId, String uuid) throws IOException {
+        checkOwnerByRoomId(roomId, uuid);
+        Room room = entityManager.getReference(Room.class, roomId);
+        if(!(roomMediaRepository.countMediaByRoom(roomId) < 10)) {
+            throw new ValidationException("Максимальное количество media у номера 10 (The maximum number of media items for a room is 10).");
+        }
+        String key = storageService.uploadMedia(media);
+        roomMediaRepository.save(new RoomMedia(key, room));
+    }
+
+    @Override
+    @Transactional
+    public void deleteMedia(String key, Long roomId, String uuid) {
+        checkOwnerByRoomId(roomId, uuid);
+        int countUpdate = roomMediaRepository.updateMediaRoom(key);
+        if(countUpdate == 0) throw new NoSuchElementException("Медиа с таким ключом у комнаты не найдена (Media with such a key was not found at the room).");
+    }
+
+
     private void checkOwnerByRoomId(Long roomId, String uuid) {
         boolean exists = roomRepository.existsByRoomIdAndOwner(roomId, UUID.fromString(uuid));
         if(!exists){

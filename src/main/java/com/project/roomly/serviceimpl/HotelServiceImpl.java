@@ -1,21 +1,26 @@
 package com.project.roomly.serviceimpl;
 
-import com.project.roomly.dto.Hotel.HotelDto;
+import com.project.roomly.dto.Hotel.RequestHotelDto;
 import com.project.roomly.dto.Hotel.ResponseHotelDto;
 import com.project.roomly.dto.Hotel.SetHotelDto;
 import com.project.roomly.dto.Media.*;
 import com.project.roomly.entity.Hotel;
+import com.project.roomly.entity.HotelMedia;
 import com.project.roomly.mapper.MapperHotel;
+import com.project.roomly.repository.HotelMediaRepository;
 import com.project.roomly.repository.HotelRepository;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.MediaService;
+import com.project.roomly.storage.service.StorageService;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -24,20 +29,26 @@ public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
 
+    private final HotelMediaRepository hotelMediaRepository;
+
     private final MapperHotel mapperHotel;
 
     private final MediaService mediaService;
 
     private final EntityManager entityManager;
 
+    private final StorageService storageService;
+
 
 
     @Override
     @Transactional
-    public void saveHotel(HotelDto hotelDto, String uuid) {
-        hotelRepository.save(mapperHotel.hotelDtoToHotel(hotelDto, uuid));
+    public void saveHotel(RequestHotelDto requestHotelDto, MultipartFile[] files, String uuid) throws IOException {
+        Hotel hotel = hotelRepository.save(mapperHotel.hotelDtoToHotel(requestHotelDto, uuid));
+        List<String> keyMedia = storageService.uploadMedias(files);
+        List<HotelMedia> mediaSet = keyMedia.stream().map(key -> new HotelMedia(key, hotel)).toList();
+        hotelMediaRepository.saveAll(mediaSet);
     }
-
     @Override
     @Transactional
     public void deleteHotel(Long id, String uuid) {
@@ -87,5 +98,23 @@ public class HotelServiceImpl implements HotelService {
         return new ResponseHotelMediaDto(responseHotelDto, mediaDtoList);
     }
 
+    @Override
+    @Transactional
+    public void addMedia(MultipartFile media, Long hotelId, String uuid) throws IOException {
+        checkOwnerHotel(hotelId, uuid);
+        Hotel hotel = entityManager.getReference(Hotel.class, hotelId);
+        if(!(hotelMediaRepository.countMediaByHotel(hotelId) < 10)) {
+            throw new ValidationException("Максимальное количество media у отеля 10 (The maximum number of media items for a hotel is 10).");
+        }
+        String key = storageService.uploadMedia(media);
+        hotelMediaRepository.save(new HotelMedia(key, hotel));
+    }
 
+    @Override
+    @Transactional
+    public void deleteMedia(String key, Long hotelId, String uuid) {
+        checkOwnerHotel(hotelId, uuid);
+        int countUpdate = hotelMediaRepository.updateMediaHotel(key);
+        if(countUpdate == 0) throw new NoSuchElementException("Медиа с таким ключом у отеля не найдена (Media with such a key was not found at the hotel).");
+    }
 }

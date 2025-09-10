@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+    <changeSet id="2025-09-09-007-delete-nullable-fk" author="Dywinar">
+        <dropNotNullConstraint tableName="room_media" columnName="room_id"/>
+        <dropNotNullConstraint tableName="hotel_media" columnName="hotel_id"/>
+        <dropForeignKeyConstraint baseTableName="hotel_media" constraintName="fk_hotel_media_hotel"/>
+        <dropForeignKeyConstraint baseTableName="room_media" constraintName="fk_room_media_room"/>
+
+        <addForeignKeyConstraint baseTableName="room_media" baseColumnNames="room_id" constraintName="fk_room_media_room" referencedTableName="room"
+                                 referencedColumnNames="id" onDelete="SET NULL"/>
+        <addForeignKeyConstraint baseTableName="hotel_media" baseColumnNames="hotel_id" constraintName="fk_hotel_media_hotel" referencedTableName="hotel"
+                                 referencedColumnNames="id" onDelete="SET NULL"/>
+    </changeSet>
+</databaseChangeLog>

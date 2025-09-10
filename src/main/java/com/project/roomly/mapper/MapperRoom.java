@@ -2,13 +2,17 @@ package com.project.roomly.mapper;
 
 import com.project.roomly.dto.Room.RoomDto;
 import com.project.roomly.dto.Room.SetRoomDto;
+import com.project.roomly.entity.Hotel;
 import com.project.roomly.entity.Room;
 import org.mapstruct.*;
+
 
 @Mapper(componentModel = "spring")
 public interface MapperRoom {
 
-    Room roomDtoToRoom(RoomDto roomDto);
+
+    @Mapping(target = "hotel", expression = "java(hotel)")
+    Room roomDtoToRoom(RoomDto roomDto, @Context Hotel hotel);
 
     @Mappings({
             @Mapping(target = "countRoom", source = "countRoom", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),

@@ -7,10 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "hotel")
@@ -41,13 +38,8 @@ public class Hotel {
     private List<Room> roomList;
 
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "hotel_media",
-            joinColumns = @JoinColumn(name = "hotel_id"),
-            inverseJoinColumns = @JoinColumn(name = "media_id")
-    )
-    private Set<Media> media = new HashSet<>();
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private List<HotelMedia> media = new ArrayList<>();
 
 
 }

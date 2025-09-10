@@ -9,5 +9,4 @@ public interface MediaService {
     List<MediaDto> getMediaDtoByHotelId(Long hotelId);
     List<MediaDto> getMediaDtoByRoomId(Long roomId);
     List<RoomsMediaDto> getMediaByRoomsId(List<Long> roomsId);
-
 }

@@ -1,4 +1,4 @@
-package com.project.roomly.dto.search;
+package com.project.roomly.dto.Search;
 
 import jakarta.validation.constraints.NotNull;
 

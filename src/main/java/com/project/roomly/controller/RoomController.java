@@ -4,21 +4,26 @@ import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Room.RoomDto;
 import com.project.roomly.dto.Room.SearchRoomsDto;
 import com.project.roomly.dto.Room.SetRoomDto;
-import com.project.roomly.dto.search.SearchDto;
+import com.project.roomly.dto.Search.SearchDto;
 import com.project.roomly.service.RoomService;
 import com.project.roomly.validation.ValidationDateBookingService;
+import com.project.roomly.validation.ValidationMedia;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -30,15 +35,27 @@ public class RoomController {
     private final RoomService roomService;
 
     private final ValidationDateBookingService validationDateBookingService;
+    private final ValidationMedia validationMedia;
 
 
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
-            summary = "Создания номера",
+            summary = "Создание номера",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            encoding = {
+                                    @Encoding(
+                                            name = "room",
+                                            contentType = MediaType.APPLICATION_JSON_VALUE
+                                    )
+                            }
+                    )
+            ),
             responses = @ApiResponse(responseCode = "201")
     )
-    @PostMapping
-    public ResponseEntity<Void> createRoom(@Valid @RequestBody RoomDto roomDto, @AuthenticationPrincipal Jwt jwt){
-        roomService.saveRoom(roomDto, jwt.getSubject());
+    public ResponseEntity<Void> createRoom(@Valid @RequestPart("room") RoomDto roomDto, @RequestPart(name = "media", required = false) MultipartFile[] media,  @AuthenticationPrincipal Jwt jwt) throws IOException {
+        validationMedia.validationTypeMedia(media);
+        roomService.saveRoom(roomDto, media, jwt.getSubject());
         return ResponseEntity.status(201).build();
     }
 
@@ -47,9 +64,35 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = SearchRoomsDto.class)))
     )
     @PostMapping("/search")
-    public ResponseEntity<SearchRoomsDto> getHotel(@Valid @RequestBody SearchDto searchDto){
+    public ResponseEntity<SearchRoomsDto> getRoom(@Valid @RequestBody SearchDto searchDto){
         validationDateBookingService.checkDate(searchDto.startTime(), searchDto.endTime());
         return ResponseEntity.ok(roomService.searchRoomsByDate(searchDto));
+    }
+
+    @PostMapping(value = "/{roomId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Добавления media номера",
+            responses = @ApiResponse(responseCode = "201")
+    )
+    public ResponseEntity<Void> createMediaRoom(
+            @PathVariable Long roomId,
+            @RequestPart(value = "file", required = false)   MultipartFile media,
+            @AuthenticationPrincipal Jwt jwt
+    ) throws IOException {
+        validationMedia.validationTypeMedia(new MultipartFile[]{media});
+        roomService.addMedia(media, roomId, jwt.getSubject());
+        return ResponseEntity.status(201).build();
+    }
+
+
+    @Operation(
+            summary = "Удаление медиа номера",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
+    )
+    @DeleteMapping("/{id}/")
+    public ResponseEntity<Map<String, String>> deleteMediaRoom(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
+        roomService.deleteMedia(keyMedia, id, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "Media is deleted"));
     }
 
 
@@ -58,7 +101,7 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> createHotel(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<Map<String, String>> deleteRoom(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
         roomService.deleteRoom(id, jwt.getSubject());
         return ResponseEntity.ok(Map.of("message", "Room is deleted"));
     }

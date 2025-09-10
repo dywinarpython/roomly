@@ -13,9 +13,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>roomly</name>
 	<description>Roomly — a web-based hotel and room booking service</description>
-
 	<properties>
 		<java.version>21</java.version>
+		<aws.sdk.version>2.33.4</aws.sdk.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -41,6 +41,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${aws.sdk.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.liquibase</groupId>
@@ -82,7 +87,6 @@
 			<version>1.5.5.Final</version>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
