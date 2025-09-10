@@ -35,23 +35,38 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<String> uploadMedias(MultipartFile[] files) throws IOException {
+        if (files == null || files.length == 0) {
+            throw new IOException("Файлы не переданы (No files provided).");
+        }
+
         List<String> lsKey = new ArrayList<>();
-        for (MultipartFile file: files ){
-            UUID nameMedia = UUID.randomUUID();
-            String key = nameMedia + "." + Objects.requireNonNull(file.getContentType()).substring(file.getContentType().indexOf("/") + 1);
+
+        for (MultipartFile file : files) {
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.contains("/")) {
+                throw new IOException("Unsupported or missing content type");
+            }
+            String ext = contentType.substring(contentType.indexOf("/") + 1).trim().toLowerCase();
+            if (ext.isEmpty()) {
+                throw new IOException("Unsupported file extension derived from content type");
+            }
+            String key = UUID.randomUUID() + "." + ext;
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(bucketName)
                             .acl(ObjectCannedACL.PUBLIC_READ)
                             .key(key)
-                            .contentType(file.getContentType())
+                            .contentType(contentType)
                             .build(),
                     RequestBody.fromBytes(file.getBytes())
             );
+
             lsKey.add(key);
         }
+
         return lsKey;
     }
+
 
     @Override
     public String uploadMedia(MultipartFile file) throws IOException {

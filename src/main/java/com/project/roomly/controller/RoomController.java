@@ -74,7 +74,7 @@ public class RoomController {
             summary = "Добавления media номера",
             responses = @ApiResponse(responseCode = "201")
     )
-    public ResponseEntity<Void> createMediaHotel(
+    public ResponseEntity<Void> createMediaRoom(
             @PathVariable Long roomId,
             @RequestPart(value = "file")   MultipartFile media,
             @AuthenticationPrincipal Jwt jwt
@@ -90,7 +90,7 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
     )
     @DeleteMapping("/{id}/")
-    public ResponseEntity<Map<String, String>> deleteMediaHotel(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<Map<String, String>> deleteMediaRoom(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
         roomService.deleteMedia(keyMedia, id, jwt.getSubject());
         return ResponseEntity.ok(Map.of("message", "Media is deleted"));
     }
