@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
 
     <changeSet id="2025-09-09-006-create-sequence" author="Dywinar">
-        <createSequence sequenceName="hotel_media_seq" incrementBy="20" startValue="1"/>
-        <createSequence sequenceName="room_media_seq" incrementBy="20" startValue="1"/>
+        <createSequence sequenceName="hotel_media_seq" incrementBy="10" startValue="1"/>
+        <createSequence sequenceName="room_media_seq" incrementBy="10" startValue="1"/>
     </changeSet>
 </databaseChangeLog>

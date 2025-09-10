@@ -13,7 +13,7 @@ public class RoomMedia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "room_media_seq")
-    @SequenceGenerator(allocationSize = 20, name = "room_media_seq", sequenceName = "room_media_seq")
+    @SequenceGenerator(allocationSize = 10, name = "room_media_seq", sequenceName = "room_media_seq")
     private Long id;
 
     @Column(name = "url", nullable = false)

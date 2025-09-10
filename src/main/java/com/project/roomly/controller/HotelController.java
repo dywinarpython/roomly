@@ -6,6 +6,7 @@ import com.project.roomly.dto.Media.ResponseHotelMediaDto;
 import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.RoomService;
+import com.project.roomly.validation.ValidationMedia;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
@@ -34,6 +35,8 @@ public class HotelController {
 
     private final RoomService roomService;
 
+    private final ValidationMedia validationMedia;
+
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
@@ -55,6 +58,7 @@ public class HotelController {
             @RequestPart(value = "file", required = false)   MultipartFile[] media,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
+        validationMedia.validationTypeMedia(media);
         hotelService.saveHotel(requestHotelDto, media, jwt.getSubject());
         return ResponseEntity.status(201).build();
     }

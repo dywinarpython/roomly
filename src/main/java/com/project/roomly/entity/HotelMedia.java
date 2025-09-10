@@ -12,7 +12,7 @@ public class HotelMedia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hotel_media_seq")
-    @SequenceGenerator(allocationSize = 20, name = "hotel_media_seq", sequenceName = "hotel_media_seq")
+    @SequenceGenerator(allocationSize = 10, name = "hotel_media_seq", sequenceName = "hotel_media_seq")
     private Long id;
 
     public HotelMedia(String url, Hotel hotel) {

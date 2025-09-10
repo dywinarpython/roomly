@@ -12,9 +12,10 @@ spring:
         order_inserts: true
         order_updates: true
         jdbc:
-          batch_size: 20
+          batch_size: 5
           batch_versioned_data: true
           fetch_size: 100
+        generate_statistics: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -33,7 +34,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 50MB
-      max-request-size: 50MB
+      max-request-size: 500MB
 
 logging:
   level:
@@ -46,3 +47,4 @@ storage:
   secret_key: ${SECRET_KEY}
   bucket_name: ${BUCKET_NAME:roomly}
   file_url_template: ${FILE_URL_TEMPLATE:https://roomly.hb.ru-msk.vkcloud-storage.ru/}
+  type_file: mp4, png, jpeg, gif, jpg
