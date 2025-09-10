@@ -13,4 +13,6 @@ public interface HotelService {
     void setHotel(SetHotelDto setHotelDto, String uuid);
     void checkOwnerHotel(Long id, String uuid);
     ResponseHotelMediaDto getHotel(Long hotelId);
+    void addMedia(MultipartFile media, Long hotelId, String uuid) throws IOException;
+    void deleteMedia(String key, Long hotelId, String uuid);
 }

@@ -61,6 +61,4 @@ public class ExceptionController {
         errorResponse.put("message", "An unexpected error occurred: " + ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-
 }

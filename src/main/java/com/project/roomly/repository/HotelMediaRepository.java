@@ -24,5 +24,16 @@ public interface HotelMediaRepository extends JpaRepository<HotelMedia, Long> {
     @Query("delete from HotelMedia m WHERE m.hotel is null")
     int deleteByHotelIsNull();
 
+    @Modifying
+    @Query("""
+            update HotelMedia h
+            set h.hotel = null
+            where h.url = :url and h.hotel is not null
+            """)
+    int updateMediaHotel(@Param("url") String key);
+
+    @Query("select count(m) from HotelMedia m where m.hotel.id = :hotelId")
+    int countMediaByHotel(@Param("hotelId") Long hotelId);
+
 
 }

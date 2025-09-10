@@ -2,12 +2,14 @@ package com.project.roomly.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "hotel_media")
 @Getter
 @Setter
+@NoArgsConstructor
 public class HotelMedia {
 
     @Id

@@ -37,16 +37,5 @@ public class MediaServiceImpl implements MediaService {
                         new RoomsMediaDto(roomsMediaDto.roomId(), storageService.getMedia(roomsMediaDto.url()))).toList();
     }
 
-    @Override
-    public void deleteMediaByHotelId(Long hotelId) {
-        List<String> keyMedia = hotelMediaRepository.findMediaKeyByHotelId(hotelId);
-        storageService.deleteMedias(keyMedia);
-    }
-
-    @Override
-    public void deleteMediaByRoomId(Long roomId) {
-        List<String> keyMedia = roomMediaRepository.findMediaKeysByRoomsId(roomId);
-        storageService.deleteMedias(keyMedia);
-    }
 
 }

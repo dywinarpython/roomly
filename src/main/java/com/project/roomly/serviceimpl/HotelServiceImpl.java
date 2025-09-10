@@ -45,7 +45,7 @@ public class HotelServiceImpl implements HotelService {
     @Transactional
     public void saveHotel(RequestHotelDto requestHotelDto, MultipartFile[] files, String uuid) throws IOException {
         Hotel hotel = hotelRepository.save(mapperHotel.hotelDtoToHotel(requestHotelDto, uuid));
-        List<String> keyMedia = storageService.uploadMedia(files);
+        List<String> keyMedia = storageService.uploadMedias(files);
         List<HotelMedia> mediaSet = keyMedia.stream().map(key -> new HotelMedia(key, hotel)).toList();
         hotelMediaRepository.saveAll(mediaSet);
     }
@@ -96,5 +96,25 @@ public class HotelServiceImpl implements HotelService {
         ResponseHotelDto responseHotelDto = optionalResponseHotelDto.get();
         List<MediaDto> mediaDtoList = mediaService.getMediaDtoByHotelId(hotelId);
         return new ResponseHotelMediaDto(responseHotelDto, mediaDtoList);
+    }
+
+    @Override
+    @Transactional
+    public void addMedia(MultipartFile media, Long hotelId, String uuid) throws IOException {
+        checkOwnerHotel(hotelId, uuid);
+        Hotel hotel = entityManager.getReference(Hotel.class, hotelId);
+        if(!(hotelMediaRepository.countMediaByHotel(hotelId) < 10)) {
+            throw new ValidationException("Максимальное количество media у отеля 10 (The maximum number of rooms at the hotel is 10).");
+        }
+        String key = storageService.uploadMedia(media);
+        hotelMediaRepository.save(new HotelMedia(key, hotel));
+    }
+
+    @Override
+    @Transactional
+    public void deleteMedia(String key, Long hotelId, String uuid) {
+        checkOwnerHotel(hotelId, uuid);
+        int countUpdate = hotelMediaRepository.updateMediaHotel(key);
+        if(countUpdate == 0) throw new NoSuchElementException("Медиа с таким ключом у отеля не найдена (Media with such a key was not found at the hotel).");
     }
 }

@@ -34,7 +34,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public List<String> uploadMedia(MultipartFile[] files) throws IOException {
+    public List<String> uploadMedias(MultipartFile[] files) throws IOException {
         List<String> lsKey = new ArrayList<>();
         for (MultipartFile file: files ){
             UUID nameMedia = UUID.randomUUID();
@@ -54,6 +54,21 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
+    public String uploadMedia(MultipartFile file) throws IOException {
+        UUID nameMedia = UUID.randomUUID();
+        String key = nameMedia + "." + Objects.requireNonNull(file.getContentType()).substring(file.getContentType().indexOf("/") + 1);
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .acl(ObjectCannedACL.PUBLIC_READ)
+                        .key(key)
+                        .contentType(file.getContentType())
+                        .build(),
+                RequestBody.fromBytes(file.getBytes()));
+        return key;
+    }
+
+    @Override
     public void deleteMedias(List<String> keyMedia) {
         for (String key: keyMedia){
             s3Client.deleteObject(DeleteObjectRequest.builder()
@@ -64,13 +79,6 @@ public class StorageServiceImpl implements StorageService {
         }
     }
 
-    @Override
-    public void deleteMedia(String keyMedia) {
-        s3Client.deleteObject(DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(keyMedia)
-                .build());
-    }
 
     @Override
     public List<MediaDto> getMedias(List<String> nameMedia) {

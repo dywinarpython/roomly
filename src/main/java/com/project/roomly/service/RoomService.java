@@ -20,5 +20,7 @@ public interface RoomService {
     SearchRoomsDto searchRoomsByDate(SearchDto searchDto);
     ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId);
     RoomPaymentInfoDto getRoomPaymentInfo(Long roomId);
+    void addMedia(MultipartFile media, Long roomId, String uuid) throws IOException;
+    void deleteMedia(String key, Long roomId, String uuid);
 
 }

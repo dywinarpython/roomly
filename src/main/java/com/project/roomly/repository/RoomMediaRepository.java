@@ -44,4 +44,18 @@ public interface RoomMediaRepository extends JpaRepository<RoomMedia, Long> {
     @Query("delete from RoomMedia m WHERE m.room is null")
     int deleteByRoomIsNull();
 
+
+
+
+    @Modifying
+    @Query("""
+            update RoomMedia r
+            set r.room = null
+            where r.url = :url and r.room is not null
+            """)
+    int updateMediaRoom(@Param("url") String key);
+
+    @Query("select count(m) from RoomMedia m where m.room.id = :roomId")
+    int countMediaByRoom(@Param("roomId") Long roomId);
+
 }

@@ -26,6 +26,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 
 
+
     @Query("select new com.project.roomly.dto.Hotel.ResponseHotelDto(h.name, h.address) from Hotel h where h.id = :hotelId")
     Optional<ResponseHotelDto> findHotel(@Param("hotelId") Long hotelId);
 

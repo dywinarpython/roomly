@@ -63,6 +63,31 @@ public class HotelController {
         return ResponseEntity.status(201).build();
     }
 
+    @PostMapping(value = "/{hotelId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Добавления media отеля",
+            responses = @ApiResponse(responseCode = "201")
+    )
+    public ResponseEntity<Void> createMediaHotel(
+            @PathVariable Long hotelId,
+            @RequestPart(value = "file")   MultipartFile media,
+            @AuthenticationPrincipal Jwt jwt
+    ) throws IOException {
+        validationMedia.validationTypeMedia(new MultipartFile[]{media});
+        hotelService.addMedia(media, hotelId, jwt.getSubject());
+        return ResponseEntity.status(201).build();
+    }
+
+
+    @Operation(
+            summary = "Удаление медиа отеля",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
+    )
+    @DeleteMapping("/{id}/")
+    public ResponseEntity<Map<String, String>> deleteMediaHotel(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
+        hotelService.deleteMedia(keyMedia, id, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "Media is deleted"));
+    }
 
     @Operation(
             summary = "Удаление отеля",

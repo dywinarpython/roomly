@@ -49,7 +49,7 @@ public class RoomServiceImpl implements RoomService {
     public void saveRoom(RoomDto roomDto, MultipartFile[] media, String uuid) throws IOException {
        hotelService.checkOwnerHotel(roomDto.hotelId(), uuid);
         Room room = roomRepository.save(mapperRoom.roomDtoToRoom(roomDto,entityManager.getReference(Hotel.class, roomDto.hotelId())));
-       List<String> keyMedia = storageService.uploadMedia(media);
+       List<String> keyMedia = storageService.uploadMedias(media);
        List<RoomMedia> mediaList = keyMedia.stream().map(key -> new RoomMedia(key, room)).toList();
        roomMediaRepository.saveAll(mediaList);
     }
@@ -119,7 +119,29 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.findRoomPricing(roomId).orElseThrow(() -> new NoSuchElementException("Room is not found"));
     }
 
-    @Transactional(readOnly = true)
+
+
+    @Override
+    @Transactional
+    public void addMedia(MultipartFile media, Long roomId, String uuid) throws IOException {
+        checkOwnerByRoomId(roomId, uuid);
+        Room room = entityManager.getReference(Room.class, roomId);
+        if(!(roomMediaRepository.countMediaByRoom(roomId) < 10)) {
+            throw new ValidationException("Максимальное количество media у номера 10 (The maximum number of rooms at the room is 10).");
+        }
+        String key = storageService.uploadMedia(media);
+        roomMediaRepository.save(new RoomMedia(key, room));
+    }
+
+    @Override
+    @Transactional
+    public void deleteMedia(String key, Long roomId, String uuid) {
+        checkOwnerByRoomId(roomId, uuid);
+        int countUpdate = roomMediaRepository.updateMediaRoom(key);
+        if(countUpdate == 0) throw new NoSuchElementException("Медиа с таким ключом у комнаты не найдена (Media with such a key was not found at the room).");
+    }
+
+
     private void checkOwnerByRoomId(Long roomId, String uuid) {
         boolean exists = roomRepository.existsByRoomIdAndOwner(roomId, UUID.fromString(uuid));
         if(!exists){

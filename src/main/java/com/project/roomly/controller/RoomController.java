@@ -69,6 +69,32 @@ public class RoomController {
         return ResponseEntity.ok(roomService.searchRoomsByDate(searchDto));
     }
 
+    @PostMapping(value = "/{roomId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Добавления media номера",
+            responses = @ApiResponse(responseCode = "201")
+    )
+    public ResponseEntity<Void> createMediaHotel(
+            @PathVariable Long roomId,
+            @RequestPart(value = "file")   MultipartFile media,
+            @AuthenticationPrincipal Jwt jwt
+    ) throws IOException {
+        validationMedia.validationTypeMedia(new MultipartFile[]{media});
+        roomService.addMedia(media, roomId, jwt.getSubject());
+        return ResponseEntity.status(201).build();
+    }
+
+
+    @Operation(
+            summary = "Удаление медиа номера",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
+    )
+    @DeleteMapping("/{id}/")
+    public ResponseEntity<Map<String, String>> deleteMediaHotel(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
+        roomService.deleteMedia(keyMedia, id, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "Media is deleted"));
+    }
+
 
     @Operation(
             summary = "Удаление номера",
