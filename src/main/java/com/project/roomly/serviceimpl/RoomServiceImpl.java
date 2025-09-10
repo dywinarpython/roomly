@@ -127,7 +127,7 @@ public class RoomServiceImpl implements RoomService {
         checkOwnerByRoomId(roomId, uuid);
         Room room = entityManager.getReference(Room.class, roomId);
         if(!(roomMediaRepository.countMediaByRoom(roomId) < 10)) {
-            throw new ValidationException("Максимальное количество media у номера 10 (The maximum number of rooms at the room is 10).");
+            throw new ValidationException("Максимальное количество media у номера 10 (The maximum number of media items for a room is 10).");
         }
         String key = storageService.uploadMedia(media);
         roomMediaRepository.save(new RoomMedia(key, room));

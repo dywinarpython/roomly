@@ -104,7 +104,7 @@ public class HotelServiceImpl implements HotelService {
         checkOwnerHotel(hotelId, uuid);
         Hotel hotel = entityManager.getReference(Hotel.class, hotelId);
         if(!(hotelMediaRepository.countMediaByHotel(hotelId) < 10)) {
-            throw new ValidationException("Максимальное количество media у отеля 10 (The maximum number of rooms at the hotel is 10).");
+            throw new ValidationException("Максимальное количество media у отеля 10 (The maximum number of media items for a hotel is 10).");
         }
         String key = storageService.uploadMedia(media);
         hotelMediaRepository.save(new HotelMedia(key, hotel));
