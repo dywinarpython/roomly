@@ -48,3 +48,6 @@ storage:
   bucket_name: ${BUCKET_NAME:roomly}
   file_url_template: ${FILE_URL_TEMPLATE:https://roomly.hb.ru-msk.vkcloud-storage.ru/}
   type_file: mp4, png, jpeg, gif, jpg
+
+pageable:
+  size: ${PAGEABLE_SIZE:5}

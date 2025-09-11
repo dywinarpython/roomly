@@ -22,9 +22,13 @@ public class Room {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Column(name = "description", nullable = false)
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
+
 
     @Column(name = "count_room", nullable = false)
     private Integer countRoom;

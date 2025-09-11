@@ -3,9 +3,8 @@ package com.project.roomly.serviceimpl;
 import com.project.roomly.dto.Media.MediaDto;
 import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
-import com.project.roomly.dto.Media.RoomsMediaDto;
+import com.project.roomly.dto.Media.ResponseMediaDto;
 import com.project.roomly.dto.Room.*;
-import com.project.roomly.dto.Search.SearchDto;
 import com.project.roomly.entity.*;
 import com.project.roomly.mapper.MapperRoom;
 import com.project.roomly.repository.RoomMediaRepository;
@@ -17,12 +16,16 @@ import com.project.roomly.storage.service.StorageService;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,9 @@ public class RoomServiceImpl implements RoomService {
     private final MediaService mediaService;
 
     private final StorageService storageService;
+
+    @Value("${pageable.size}")
+    private Integer pageableSize;
 
     @Override
     @Transactional
@@ -73,7 +79,7 @@ public class RoomServiceImpl implements RoomService {
         checkOwnerByRoomId(setRoomDto.roomId(), uuid);
         Room room = entityManager.getReference(Room.class, setRoomDto.roomId());
         if (setRoomDto.countRoom() == null && setRoomDto.name() == null &&
-                setRoomDto.floor() == null && setRoomDto.priceDay() == null) {
+                setRoomDto.floor() == null && setRoomDto.priceDay() == null && setRoomDto.description() == null) {
             throw new ValidationException("Not a single field has been updated!");
         }
         mapperRoom.updateRoomField(setRoomDto, room);
@@ -93,22 +99,22 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public SearchRoomsDto searchRoomsByDate(SearchDto searchDto) {
-        return new SearchRoomsDto(roomRepository.findAvailableRooms(searchDto.startTime(), searchDto.endTime()));
+    public SearchRoomsDto searchRoomsByDate(String city, BigDecimal minPrice, BigDecimal maxPrice, LocalDate startDate, LocalDate endDate, Integer page) {
+        return new SearchRoomsDto(roomRepository.findAvailableRooms(city, minPrice, maxPrice, startDate, endDate, PageRequest.of(page, pageableSize)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId) {
-        List<ResponseRoomDto> roomList = roomRepository.findRoomsByHotelId(hotelId);
+    public ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId, Integer page) {
+        List<ResponseRoomDto> roomList = roomRepository.findRoomsByHotelId(hotelId, PageRequest.of(page, pageableSize));
         if (roomList.isEmpty()){
             return new ResponseRoomsMediaDto(List.of());
         }
-        List<RoomsMediaDto> mediaList = mediaService.getMediaByRoomsId(roomList.stream().map(ResponseRoomDto::id).toList());
+        List<ResponseMediaDto> mediaList = mediaService.getMediaByRoomsId(roomList.stream().map(ResponseRoomDto::id).toList());
 
-        Map<Long, List<RoomsMediaDto>> allRoomsMedia = mediaList.stream().collect(Collectors.groupingBy(RoomsMediaDto::roomId, LinkedHashMap::new, Collectors.toList()));
+        Map<Long, List<ResponseMediaDto>> allRoomsMedia = mediaList.stream().collect(Collectors.groupingBy(ResponseMediaDto::id, LinkedHashMap::new, Collectors.toList()));
         return new ResponseRoomsMediaDto(roomList.stream().map(room -> new ResponseRoomMediaDto(
-                new ResponseRoomDto(room.id(), room.name(), room.countRoom(), room.priceDay(), room.floor(), room.prepaymentPercentage(), room.hotelId()),
+                new ResponseRoomDto(room.id(), room.name(), room.description(), room.countRoom(), room.priceDay(), room.floor(), room.prepaymentPercentage(), room.hotelId()),
                 allRoomsMedia.getOrDefault(room.id(), List.of()).stream().map(media -> new MediaDto(media.url())).toList()
         )).toList());
     }

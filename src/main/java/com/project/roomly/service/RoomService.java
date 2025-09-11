@@ -6,10 +6,11 @@ import com.project.roomly.dto.Room.RoomDto;
 import com.project.roomly.dto.Room.RoomPaymentInfoDto;
 import com.project.roomly.dto.Room.SearchRoomsDto;
 import com.project.roomly.dto.Room.SetRoomDto;
-import com.project.roomly.dto.Search.SearchDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 public interface RoomService {
@@ -17,8 +18,13 @@ public interface RoomService {
     void deleteRoom(Long roomId, String uuid);
     void setRoom(SetRoomDto setRoomDto, String uuid);
     ResponseRoomMediaDto getRoom(Long roomId);
-    SearchRoomsDto searchRoomsByDate(SearchDto searchDto);
-    ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId);
+    SearchRoomsDto searchRoomsByDate(String city,
+                                     BigDecimal minPrice,
+                                     BigDecimal maxPrice,
+                                     LocalDate startDate,
+                                     LocalDate endDate,
+                                     Integer page);
+    ResponseRoomsMediaDto getRoomsByHotelId(Long hotelId, Integer page);
     RoomPaymentInfoDto getRoomPaymentInfo(Long roomId);
     void addMedia(MultipartFile media, Long roomId, String uuid) throws IOException;
     void deleteMedia(String key, Long roomId, String uuid);

@@ -5,8 +5,10 @@ import com.project.roomly.dto.Booking.ResponseBookingDto;
 import com.project.roomly.entity.Booking;
 import com.project.roomly.entity.Room;
 import com.project.roomly.entity.StatusBooking;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,6 +38,10 @@ public interface MapperBooking {
         return booking;
     }
 
-    @Mapping(source = "id", target = "bookingId")
-    ResponseBookingDto bookingToResponseBookingDto(Booking booking);
+    @Mappings(
+            value = {
+                    @Mapping(source = "id", target = "bookingId"),
+                    @Mapping(target = "roomId", expression = "java(roomId)")
+            })
+    ResponseBookingDto bookingToResponseBookingDto(Booking booking, @Context Long roomId);
 }

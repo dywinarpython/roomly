@@ -18,7 +18,8 @@ public interface MapperRoom {
             @Mapping(target = "countRoom", source = "countRoom", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
             @Mapping(target = "name", source = "name", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
             @Mapping(target = "floor", source = "floor", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
-            @Mapping(target = "priceDay", source = "priceDay", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+            @Mapping(target = "priceDay", source = "priceDay", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
+            @Mapping(target = "description", source = "description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     })
     void updateRoomField(SetRoomDto setRoomDto, @MappingTarget Room room);
 }

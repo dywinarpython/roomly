@@ -3,6 +3,7 @@ package com.project.roomly.controller;
 import com.project.roomly.dto.Hotel.RequestHotelDto;
 import com.project.roomly.dto.Hotel.SetHotelDto;
 import com.project.roomly.dto.Media.ResponseHotelMediaDto;
+import com.project.roomly.dto.Media.ResponseHotelsMediaDto;
 import com.project.roomly.dto.Media.ResponseRoomsMediaDto;
 import com.project.roomly.service.HotelService;
 import com.project.roomly.service.RoomService;
@@ -36,6 +37,7 @@ public class HotelController {
     private final RoomService roomService;
 
     private final ValidationMedia validationMedia;
+
 
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -108,14 +110,23 @@ public class HotelController {
         return ResponseEntity.ok(hotelService.getHotel(id));
     }
 
+    @Operation(
+            summary = "Получения информации отелей созданных пользователем",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResponseHotelsMediaDto.class)))
+    )
+    @GetMapping
+    public ResponseEntity<ResponseHotelsMediaDto> getHotelsByOwner(@RequestParam Integer page, @AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(hotelService.getHotelsByOwner(jwt.getSubject(), page));
+    }
+
 
     @Operation(
             summary = "Получения номеров отеля",
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResponseRoomsMediaDto.class)))
     )
-    @GetMapping("rooms/")
-    public ResponseEntity<ResponseRoomsMediaDto> getRooms(@RequestParam Long hotelId){
-        return ResponseEntity.ok(roomService.getRoomsByHotelId(hotelId));
+    @GetMapping("rooms")
+    public ResponseEntity<ResponseRoomsMediaDto> getRooms(@RequestParam Long hotelId, @RequestParam Integer page){
+       return ResponseEntity.ok(roomService.getRoomsByHotelId(hotelId,page));
     }
 
     @Operation(

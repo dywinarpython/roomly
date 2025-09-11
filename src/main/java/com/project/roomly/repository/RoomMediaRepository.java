@@ -1,6 +1,6 @@
 package com.project.roomly.repository;
 
-import com.project.roomly.dto.Media.RoomsMediaDto;
+import com.project.roomly.dto.Media.ResponseMediaDto;
 import com.project.roomly.entity.RoomMedia;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,18 +11,18 @@ import java.util.List;
 
 public interface RoomMediaRepository extends JpaRepository<RoomMedia, Long> {
 
-    @Query("select m.url from Room h join h.media m where h.id = :roomId")
-    List<String> findMediaByRoomId(@Param("roomId") Long roomId);
+    @Query("select m.url from Room h join h.media m where h.id = :id")
+    List<String> findMediaByRoomId(@Param("id") Long roomId);
 
     @Query(
             """
-            select new com.project.roomly.dto.Media.RoomsMediaDto(r.id, m.url)
+            select new com.project.roomly.dto.Media.ResponseMediaDto(r.id, m.url)
             from Room r
             join r.media m
             where r.id in :roomsId
             """
     )
-    List<RoomsMediaDto> findMediasByRoomsId(@Param("roomsId") List<Long> roomsId);
+    List<ResponseMediaDto> findMediasByRoomsId(@Param("roomsId") List<Long> roomsId);
 
 
     @Query("""
@@ -47,7 +47,7 @@ public interface RoomMediaRepository extends JpaRepository<RoomMedia, Long> {
             """)
     int updateMediaRoom(@Param("url") String key);
 
-    @Query("select count(m) from RoomMedia m where m.room.id = :roomId")
-    int countMediaByRoom(@Param("roomId") Long roomId);
+    @Query("select count(m) from RoomMedia m where m.room.id = :id")
+    int countMediaByRoom(@Param("id") Long roomId);
 
 }

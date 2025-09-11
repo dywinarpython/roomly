@@ -2,6 +2,7 @@ package com.project.roomly.storage.serviceImpl;
 
 import com.project.roomly.dto.Media.MediaDto;
 import com.project.roomly.storage.service.StorageService;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class StorageServiceImpl implements StorageService {
         if (files == null || files.length == 0) {
             throw new IOException("Файлы не переданы (No files provided).");
         }
+        if(files.length > 10) throw new ValidationException("Максимальное количество медиа для загрузки 10 (The maximum amount of media to download is 10).");
 
         List<String> lsKey = new ArrayList<>();
 

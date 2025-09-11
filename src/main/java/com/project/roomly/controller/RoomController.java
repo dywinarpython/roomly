@@ -4,7 +4,6 @@ import com.project.roomly.dto.Media.ResponseRoomMediaDto;
 import com.project.roomly.dto.Room.RoomDto;
 import com.project.roomly.dto.Room.SearchRoomsDto;
 import com.project.roomly.dto.Room.SetRoomDto;
-import com.project.roomly.dto.Search.SearchDto;
 import com.project.roomly.service.RoomService;
 import com.project.roomly.validation.ValidationDateBookingService;
 import com.project.roomly.validation.ValidationMedia;
@@ -24,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -63,13 +64,18 @@ public class RoomController {
             summary = "Получения свободных номеров на определенную дату",
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = SearchRoomsDto.class)))
     )
-    @PostMapping("/search")
-    public ResponseEntity<SearchRoomsDto> getRoom(@Valid @RequestBody SearchDto searchDto){
-        validationDateBookingService.checkDate(searchDto.startTime(), searchDto.endTime());
-        return ResponseEntity.ok(roomService.searchRoomsByDate(searchDto));
+    @GetMapping("/search")
+    public ResponseEntity<SearchRoomsDto> getRoom(@RequestParam String city,
+                                                  @RequestParam(required = false) BigDecimal minPrice,
+                                                  @RequestParam(required = false) BigDecimal maxPrice,
+                                                  @RequestParam  LocalDate startDate,
+                                                  @RequestParam LocalDate endDate,
+                                                  @RequestParam Integer page){
+        validationDateBookingService.checkDate(startDate, endDate);
+        return ResponseEntity.ok(roomService.searchRoomsByDate(city, minPrice, maxPrice, startDate, endDate, page));
     }
 
-    @PostMapping(value = "/{roomId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "Добавления media номера",
             responses = @ApiResponse(responseCode = "201")

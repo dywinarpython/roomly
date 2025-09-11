@@ -15,6 +15,8 @@ import com.project.roomly.storage.service.StorageService;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,9 @@ public class HotelServiceImpl implements HotelService {
     private final EntityManager entityManager;
 
     private final StorageService storageService;
+
+    @Value("${pageable.size}")
+    private Integer pageableSize;
 
 
 
@@ -86,6 +92,7 @@ public class HotelServiceImpl implements HotelService {
         }
     }
 
+    // TODO: кеширование
     @Override
     @Transactional(readOnly = true)
     public ResponseHotelMediaDto getHotel(Long hotelId) {
@@ -96,6 +103,21 @@ public class HotelServiceImpl implements HotelService {
         ResponseHotelDto responseHotelDto = optionalResponseHotelDto.get();
         List<MediaDto> mediaDtoList = mediaService.getMediaDtoByHotelId(hotelId);
         return new ResponseHotelMediaDto(responseHotelDto, mediaDtoList);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseHotelsMediaDto getHotelsByOwner(String uuid, Integer page) {
+        List<ResponseHotelDto> hotelList = hotelRepository.findHotelsByOwner(UUID.fromString(uuid), PageRequest.of(page, pageableSize));
+        if(hotelList.isEmpty()) return new ResponseHotelsMediaDto(List.of());
+        List<ResponseMediaDto> mediaList = mediaService.getMediaByHotelsId(hotelList.stream().map(ResponseHotelDto::id).toList());
+
+        Map<Long, List<ResponseMediaDto>> allHotelsMedia = mediaList.stream().collect(Collectors.groupingBy(ResponseMediaDto::id, LinkedHashMap::new, Collectors.toList()));
+        return new ResponseHotelsMediaDto(hotelList.stream().map(hotel -> new ResponseHotelMediaDto(
+                hotel, allHotelsMedia.getOrDefault(hotel.id(), List.of()).stream().map(media -> new MediaDto(media.url())).toList()
+        )).toList());
+
     }
 
     @Override

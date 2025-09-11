@@ -1,7 +1,7 @@
 package com.project.roomly.serviceimpl;
 
 import com.project.roomly.dto.Media.MediaDto;
-import com.project.roomly.dto.Media.RoomsMediaDto;
+import com.project.roomly.dto.Media.ResponseMediaDto;
 import com.project.roomly.repository.HotelMediaRepository;
 import com.project.roomly.repository.RoomMediaRepository;
 import com.project.roomly.service.MediaService;
@@ -31,10 +31,17 @@ public class MediaServiceImpl implements MediaService {
     }
 
     @Override
-    public List<RoomsMediaDto> getMediaByRoomsId(List<Long> roomsId) {
+    public List<ResponseMediaDto> getMediaByRoomsId(List<Long> roomsId) {
         return roomMediaRepository.findMediasByRoomsId(roomsId)
-                .stream().map(roomsMediaDto ->
-                        new RoomsMediaDto(roomsMediaDto.roomId(), storageService.getMedia(roomsMediaDto.url()))).toList();
+                .stream().map(responseMediaDto ->
+                        new ResponseMediaDto(responseMediaDto.id(), storageService.getMedia(responseMediaDto.url()))).toList();
+    }
+
+    @Override
+    public List<ResponseMediaDto> getMediaByHotelsId(List<Long> hotelsId) {
+        return hotelMediaRepository.findMediasByHotelsId(hotelsId)
+                .stream().map(responseMediaDto ->
+                        new ResponseMediaDto(responseMediaDto.id(), storageService.getMedia(responseMediaDto.url()))).toList();
     }
 
 
