@@ -4,6 +4,14 @@ server:
 spring:
   application:
     name: roomly
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      repositories:
+        enabled: false
   jpa:
     show-sql: true
     properties:

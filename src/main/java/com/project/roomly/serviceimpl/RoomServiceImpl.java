@@ -17,6 +17,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -47,6 +51,8 @@ public class RoomServiceImpl implements RoomService {
 
     private final StorageService storageService;
 
+    private final CacheManager cacheManager;
+
     @Value("${pageable.size}")
     private Integer pageableSize;
 
@@ -75,6 +81,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "ROOM", key = "#setRoomDto.roomId()")
     public void setRoom(SetRoomDto setRoomDto, String uuid) {
         checkOwnerByRoomId(setRoomDto.roomId(), uuid);
         Room room = entityManager.getReference(Room.class, setRoomDto.roomId());
@@ -85,7 +92,7 @@ public class RoomServiceImpl implements RoomService {
         mapperRoom.updateRoomField(setRoomDto, room);
     }
 
-    // TODO: добавить кеширование
+    @Cacheable(cacheNames = "ROOM", key = "#roomId")
     @Override
     @Transactional(readOnly = true)
     public ResponseRoomMediaDto getRoom(Long roomId) {
@@ -129,6 +136,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "ROOM", key = "#roomId")
     public void addMedia(MultipartFile media, Long roomId, String uuid) throws IOException {
         checkOwnerByRoomId(roomId, uuid);
         Room room = entityManager.getReference(Room.class, roomId);
@@ -141,6 +149,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "ROOM", key = "#roomId")
     public void deleteMedia(String key, Long roomId, String uuid) {
         checkOwnerByRoomId(roomId, uuid);
         int countUpdate = roomMediaRepository.updateMediaRoom(key);
@@ -149,12 +158,21 @@ public class RoomServiceImpl implements RoomService {
 
 
     private void checkOwnerByRoomId(Long roomId, String uuid) {
-        boolean exists = roomRepository.existsByRoomIdAndOwner(roomId, UUID.fromString(uuid));
+        Cache cache = cacheManager.getCache("CHECK_OWNER_ROOM");
+        Boolean  exists;
+        if(cache == null)  exists = roomRepository.existsByRoomIdAndOwner(roomId, UUID.fromString(uuid));
+        else {
+            exists = cache.get(roomId + ":" + uuid, Boolean.class);
+            if(exists == null) {
+                exists = roomRepository.existsByRoomIdAndOwner(roomId, UUID.fromString(uuid));
+                cache.put(roomId + ":" + uuid, exists);
+            }
+        }
         if(!exists){
-            if(roomRepository.existsById(roomId)){
+            if(roomMediaRepository.existsById(roomId)){
                 throw new AccessDeniedException("Access is denied");
             } else {
-                throw new NoSuchElementException("Room is not found!");
+                throw new NoSuchElementException("Hotel is not found!");
             }
         }
     }
