@@ -44,21 +44,14 @@ public class StorageServiceImpl implements StorageService {
         List<String> lsKey = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            String contentType = file.getContentType();
-            if (contentType == null || !contentType.contains("/")) {
-                throw new IOException("Unsupported or missing content type");
-            }
-            String ext = contentType.substring(contentType.indexOf("/") + 1).trim().toLowerCase();
-            if (ext.isEmpty()) {
-                throw new IOException("Unsupported file extension derived from content type");
-            }
+            String ext = getString(file);
             String key = UUID.randomUUID() + "." + ext;
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(bucketName)
                             .acl(ObjectCannedACL.PUBLIC_READ)
                             .key(key)
-                            .contentType(contentType)
+                            .contentType(file.getContentType())
                             .build(),
                     RequestBody.fromBytes(file.getBytes())
             );
@@ -72,8 +65,8 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String uploadMedia(MultipartFile file) throws IOException {
-        UUID nameMedia = UUID.randomUUID();
-        String key = nameMedia + "." + Objects.requireNonNull(file.getContentType()).substring(file.getContentType().indexOf("/") + 1);
+        String ext = getString(file);
+        String key = UUID.randomUUID() + "." + ext;
         s3Client.putObject(
                 PutObjectRequest.builder()
                         .bucket(bucketName)
@@ -83,6 +76,21 @@ public class StorageServiceImpl implements StorageService {
                         .build(),
                 RequestBody.fromBytes(file.getBytes()));
         return key;
+    }
+
+    private String getString(MultipartFile file) throws IOException {
+        if (file == null) {
+            throw new IOException("Файлы не переданы (No files provided).");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.contains("/")) {
+            throw new IOException("Unsupported or missing content type");
+        }
+        String ext = contentType.substring(contentType.indexOf("/") + 1).trim().toLowerCase();
+        if (ext.isEmpty()) {
+            throw new IOException("Unsupported file extension derived from content type");
+        }
+        return ext;
     }
 
     @Override

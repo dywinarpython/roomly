@@ -23,7 +23,6 @@ spring:
           batch_size: 5
           batch_versioned_data: true
           fetch_size: 100
-        generate_statistics: true
     hibernate:
       ddl-auto: validate
     open-in-view: false

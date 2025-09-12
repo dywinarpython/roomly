@@ -8,7 +8,8 @@ import jakarta.validation.constraints.Size;
 
 public record RequestHotelDto(
         @Size(max = 255, min = 1)
-        @NotNull String name,
+        @Size(max = 255, min = 1) @NotNull String name,
+        @NotNull String city,
         @Size(max = 255, min = 1)
         @NotNull String address,
         @NotNull @Max(100) @Min(0) Integer prepaymentPercentage) {

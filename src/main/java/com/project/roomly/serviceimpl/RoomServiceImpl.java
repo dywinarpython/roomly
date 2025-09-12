@@ -100,9 +100,9 @@ public class RoomServiceImpl implements RoomService {
         if(optionalResponseRoomDto.isEmpty()){
             throw new NoSuchElementException("Room is not found!");
         }
-        ResponseRoomDto responseHotelDto = optionalResponseRoomDto.get();
+        ResponseRoomDto responseRoomDto = optionalResponseRoomDto.get();
         List<MediaDto> mediaDtoList = mediaService.getMediaDtoByRoomId(roomId);
-        return new ResponseRoomMediaDto(responseHotelDto, mediaDtoList);
+        return new ResponseRoomMediaDto(responseRoomDto, mediaDtoList);
     }
 
     @Override
@@ -172,7 +172,7 @@ public class RoomServiceImpl implements RoomService {
             if(roomMediaRepository.existsById(roomId)){
                 throw new AccessDeniedException("Access is denied");
             } else {
-                throw new NoSuchElementException("Hotel is not found!");
+                throw new NoSuchElementException("Room or media is not found!");
             }
         }
     }
