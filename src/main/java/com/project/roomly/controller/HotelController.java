@@ -57,7 +57,7 @@ public class HotelController {
     )
     public ResponseEntity<Void> createHotel(
             @Valid @RequestPart("hotel") RequestHotelDto requestHotelDto,
-            @RequestPart(value = "file", required = false)   MultipartFile[] media,
+            @RequestPart(value = "media", required = false)   MultipartFile[] media,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
         validationMedia.validationTypeMedia(media);
@@ -65,18 +65,18 @@ public class HotelController {
         return ResponseEntity.status(201).build();
     }
 
-    @PostMapping(value = "/{hotelId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "Добавления media отеля",
             responses = @ApiResponse(responseCode = "201")
     )
     public ResponseEntity<Void> createMediaHotel(
-            @PathVariable Long hotelId,
-            @RequestPart(value = "file", required = false)   MultipartFile media,
+            @PathVariable Long id,
+            @RequestPart(value = "media", required = false)   MultipartFile media,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
         validationMedia.validationTypeMedia(new MultipartFile[]{media});
-        hotelService.addMedia(media, hotelId, jwt.getSubject());
+        hotelService.addMedia(media, id, jwt.getSubject());
         return ResponseEntity.status(201).build();
     }
 

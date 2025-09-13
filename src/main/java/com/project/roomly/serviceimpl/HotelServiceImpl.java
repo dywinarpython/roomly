@@ -81,7 +81,7 @@ public class HotelServiceImpl implements HotelService {
     public void setHotel(SetHotelDto setHotelDto, String uuid) {
         checkOwnerHotel(setHotelDto.hotelId(), uuid);
         Hotel hotel = entityManager.getReference(Hotel.class, setHotelDto.hotelId());
-        if(setHotelDto.prepaymentPercentage() == null && setHotelDto.name() == null && setHotelDto.address() == null){
+        if(setHotelDto.prepaymentPercentage() == null && setHotelDto.name() == null && setHotelDto.address() == null && setHotelDto.city() == null){
             throw new ValidationException("Not a single field has been updated!");
         }
         mapperHotel.updateHotelField(setHotelDto, hotel);
