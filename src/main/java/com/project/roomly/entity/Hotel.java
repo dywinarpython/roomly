@@ -39,7 +39,7 @@ public class Hotel {
     private Integer prepaymentPercentage;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "hotel")
-    private List<Room> roomList;
+    private List<Room> roomList = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)

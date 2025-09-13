@@ -81,12 +81,12 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "201")
     )
     public ResponseEntity<Void> createMediaRoom(
-            @PathVariable Long roomId,
-            @RequestPart(value = "file", required = false)   MultipartFile media,
+            @PathVariable Long id,
+            @RequestPart(value = "media", required = false)   MultipartFile media,
             @AuthenticationPrincipal Jwt jwt
     ) throws IOException {
         validationMedia.validationTypeMedia(new MultipartFile[]{media});
-        roomService.addMedia(media, roomId, jwt.getSubject());
+        roomService.addMedia(media, id, jwt.getSubject());
         return ResponseEntity.status(201).build();
     }
 
@@ -118,7 +118,7 @@ public class RoomController {
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResponseRoomMediaDto.class)))
     )
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseRoomMediaDto> getHotel(@PathVariable Long id){
+    public ResponseEntity<ResponseRoomMediaDto> getRoom(@PathVariable Long id){
         return ResponseEntity.ok(roomService.getRoom(id));
     }
 

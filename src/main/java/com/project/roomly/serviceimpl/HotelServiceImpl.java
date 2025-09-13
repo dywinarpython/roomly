@@ -16,6 +16,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -42,6 +46,8 @@ public class HotelServiceImpl implements HotelService {
 
     private final StorageService storageService;
 
+    private final CacheManager cacheManager;
+
     @Value("${pageable.size}")
     private Integer pageableSize;
 
@@ -57,6 +63,7 @@ public class HotelServiceImpl implements HotelService {
     }
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "HOTEL", key = "#id")
     public void deleteHotel(Long id, String uuid) {
         int countDelete = hotelRepository.deleteByIdAndOwner(id, UUID.fromString(uuid));
         if(countDelete == 0){
@@ -70,19 +77,28 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "HOTEL", key = "#setHotelDto.hotelId()")
     public void setHotel(SetHotelDto setHotelDto, String uuid) {
         checkOwnerHotel(setHotelDto.hotelId(), uuid);
         Hotel hotel = entityManager.getReference(Hotel.class, setHotelDto.hotelId());
-        if(setHotelDto.prepaymentPercentage() == null && setHotelDto.name() == null && setHotelDto.address() == null){
+        if(setHotelDto.prepaymentPercentage() == null && setHotelDto.name() == null && setHotelDto.address() == null && setHotelDto.city() == null){
             throw new ValidationException("Not a single field has been updated!");
         }
         mapperHotel.updateHotelField(setHotelDto, hotel);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void checkOwnerHotel(Long id, String uuid) {
-        boolean exists = hotelRepository.existsByIdAndOwner(id, UUID.fromString(uuid));
+        Cache cache = cacheManager.getCache("CHECK_OWNER_HOTEL");
+        Boolean  exists;
+        if(cache == null)  exists = hotelRepository.existsByIdAndOwner(id, UUID.fromString(uuid));
+        else {
+            exists = cache.get(id + ":" + uuid, Boolean.class);
+            if(exists == null) {
+                exists = hotelRepository.existsByIdAndOwner(id, UUID.fromString(uuid));
+                cache.put(id + ":" + uuid, exists);
+            }
+        }
         if(!exists){
             if(hotelRepository.existsById(id)){
                 throw new AccessDeniedException("Access is denied");
@@ -92,9 +108,9 @@ public class HotelServiceImpl implements HotelService {
         }
     }
 
-    // TODO: кеширование
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "HOTEL", key = "#hotelId")
     public ResponseHotelMediaDto getHotel(Long hotelId) {
         Optional<ResponseHotelDto> optionalResponseHotelDto = hotelRepository.findHotel(hotelId);
         if(optionalResponseHotelDto.isEmpty()){
@@ -114,14 +130,17 @@ public class HotelServiceImpl implements HotelService {
         List<ResponseMediaDto> mediaList = mediaService.getMediaByHotelsId(hotelList.stream().map(ResponseHotelDto::id).toList());
 
         Map<Long, List<ResponseMediaDto>> allHotelsMedia = mediaList.stream().collect(Collectors.groupingBy(ResponseMediaDto::id, LinkedHashMap::new, Collectors.toList()));
-        return new ResponseHotelsMediaDto(hotelList.stream().map(hotel -> new ResponseHotelMediaDto(
+        ResponseHotelsMediaDto responseHotelsMediaDto = new ResponseHotelsMediaDto(hotelList.stream().map(hotel -> new ResponseHotelMediaDto(
                 hotel, allHotelsMedia.getOrDefault(hotel.id(), List.of()).stream().map(media -> new MediaDto(media.url())).toList()
         )).toList());
+
+        return responseHotelsMediaDto;
 
     }
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "HOTEL", key = "#hotelId")
     public void addMedia(MultipartFile media, Long hotelId, String uuid) throws IOException {
         checkOwnerHotel(hotelId, uuid);
         Hotel hotel = entityManager.getReference(Hotel.class, hotelId);
@@ -134,6 +153,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "HOTEL", key = "#hotelId")
     public void deleteMedia(String key, Long hotelId, String uuid) {
         checkOwnerHotel(hotelId, uuid);
         int countUpdate = hotelMediaRepository.updateMediaHotel(key);

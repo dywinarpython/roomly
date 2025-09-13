@@ -46,7 +46,7 @@ public class BookingController {
     )
     @GetMapping("/{id}")
     public ResponseEntity<ResponseBookingDto> getBooking(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
-        return ResponseEntity.status(201).body(bookingService.getBooking(id, jwt.getSubject()));
+        return ResponseEntity.status(200).body(bookingService.getBooking(id, jwt.getSubject()));
     }
 
     @Operation(
@@ -55,6 +55,6 @@ public class BookingController {
     )
     @GetMapping
     public ResponseEntity<ResponseBookingsDto> getBookings(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer page){
-        return ResponseEntity.status(201).body(bookingService.getBookings(jwt.getSubject(), page));
+        return ResponseEntity.status(200).body(bookingService.getBookings(jwt.getSubject(), page));
     }
 }

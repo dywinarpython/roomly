@@ -30,6 +30,7 @@ public class ValidationMedia {
         }
 
         for (MultipartFile file : files) {
+            if(file == null) throw new ValidationException("Ошибка обработки файла (File processing error).");
             String contentType = file.getContentType();
             if (contentType == null || !contentType.contains("/")) {
                 throw new ValidationException("Неизвестный тип файла (Unknown file type).");

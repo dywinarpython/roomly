@@ -22,7 +22,8 @@ public interface MapperHotel {
     @Mappings({
             @Mapping(target = "name", source = "name", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
             @Mapping(target = "address", source = "address", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
-            @Mapping(target = "prepaymentPercentage", source = "prepaymentPercentage", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+            @Mapping(target = "prepaymentPercentage", source = "prepaymentPercentage", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE),
+            @Mapping(target = "city", source = "city", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     })
     void updateHotelField(SetHotelDto setHotelDto, @MappingTarget Hotel hotel);
 }

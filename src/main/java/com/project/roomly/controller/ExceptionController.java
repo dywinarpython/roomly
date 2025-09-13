@@ -4,6 +4,8 @@ import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
@@ -54,10 +57,25 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, String>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<Map<String, String>> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "Неверный формат параметра (Invalid parameter format): " + ex.getName()));
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        fl -> fl.getDefaultMessage() == null ? "not message": fl.getDefaultMessage(),
+                        (existing, replacement) -> existing
+                ));
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "Неверный ввод параметра (Invalid parameter input).", "details", errors.toString()));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
