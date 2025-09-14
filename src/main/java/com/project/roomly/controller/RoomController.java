@@ -1,0 +1,136 @@
+package com.project.roomly.controller;
+
+import com.project.roomly.dto.Media.ResponseRoomMediaDto;
+import com.project.roomly.dto.Room.RoomDto;
+import com.project.roomly.dto.Room.SearchRoomsDto;
+import com.project.roomly.dto.Room.SetRoomDto;
+import com.project.roomly.service.RoomService;
+import com.project.roomly.validation.ValidationDateBookingService;
+import com.project.roomly.validation.ValidationMedia;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/room")
+@Tag(name = "Управление номерами")
+public class RoomController {
+
+    private final RoomService roomService;
+
+    private final ValidationDateBookingService validationDateBookingService;
+    private final ValidationMedia validationMedia;
+
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Создание номера",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            encoding = {
+                                    @Encoding(
+                                            name = "room",
+                                            contentType = MediaType.APPLICATION_JSON_VALUE
+                                    )
+                            }
+                    )
+            ),
+            responses = @ApiResponse(responseCode = "201")
+    )
+    public ResponseEntity<Void> createRoom(@Valid @RequestPart("room") RoomDto roomDto, @RequestPart(name = "media", required = false) MultipartFile[] media,  @AuthenticationPrincipal Jwt jwt) throws IOException {
+        validationMedia.validationTypeMedia(media);
+        roomService.saveRoom(roomDto, media, jwt.getSubject());
+        return ResponseEntity.status(201).build();
+    }
+
+    @Operation(
+            summary = "Получения свободных номеров на определенную дату",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = SearchRoomsDto.class)))
+    )
+    @GetMapping("/search")
+    public ResponseEntity<SearchRoomsDto> getRoom(@RequestParam String city,
+                                                  @RequestParam(required = false) BigDecimal minPrice,
+                                                  @RequestParam(required = false) BigDecimal maxPrice,
+                                                  @RequestParam  LocalDate startDate,
+                                                  @RequestParam LocalDate endDate,
+                                                  @RequestParam Integer page){
+        validationDateBookingService.checkDate(startDate, endDate);
+        return ResponseEntity.ok(roomService.searchRoomsByDate(city, minPrice, maxPrice, startDate, endDate, page));
+    }
+
+    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Добавления media номера",
+            responses = @ApiResponse(responseCode = "201")
+    )
+    public ResponseEntity<Void> createMediaRoom(
+            @PathVariable Long id,
+            @RequestPart(value = "media", required = false)   MultipartFile media,
+            @AuthenticationPrincipal Jwt jwt
+    ) throws IOException {
+        validationMedia.validationTypeMedia(new MultipartFile[]{media});
+        roomService.addMedia(media, id, jwt.getSubject());
+        return ResponseEntity.status(201).build();
+    }
+
+
+    @Operation(
+            summary = "Удаление медиа номера",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
+    )
+    @DeleteMapping("/{id}/media")
+    public ResponseEntity<Map<String, String>> deleteMediaRoom(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
+        roomService.deleteMedia(keyMedia, id, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "Media is deleted"));
+    }
+
+
+    @Operation(
+            summary = "Удаление номера",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
+    )
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteRoom(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
+        roomService.deleteRoom(id, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "Room is deleted"));
+    }
+
+
+    @Operation(
+            summary = "Получения информации номера",
+            responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResponseRoomMediaDto.class)))
+    )
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseRoomMediaDto> getRoom(@PathVariable Long id){
+        return ResponseEntity.ok(roomService.getRoom(id));
+    }
+
+
+
+    @Operation(
+            summary = "Изменение номера",
+            responses = @ApiResponse(responseCode = "200")
+    )
+    @PatchMapping
+    public ResponseEntity<Map<String, String>> setRoom(@RequestBody SetRoomDto setRoomDto, @AuthenticationPrincipal Jwt jwt){
+        roomService.setRoom(setRoomDto, jwt.getSubject());
+        return ResponseEntity.ok(Map.of("message", "The changes were successful!"));
+    }
+}

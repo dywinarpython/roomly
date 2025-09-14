@@ -106,16 +106,16 @@
         </createTable>
         
         <addForeignKeyConstraint baseTableName="booking" baseColumnNames="room_id" constraintName="fk_booking_room" referencedTableName="room"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
         <addForeignKeyConstraint baseTableName="room" baseColumnNames="hotel_id" constraintName="fk_room_hotel" referencedTableName="hotel"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
         <addForeignKeyConstraint baseTableName="hotel_media" baseColumnNames="hotel_id" constraintName="fk_hotel_media_hotel" referencedTableName="hotel"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
         <addForeignKeyConstraint baseTableName="hotel_media" baseColumnNames="media_id" constraintName="fk_hotel_media_media" referencedTableName="media"
-                                 referencedColumnNames="id"/>
-        <addForeignKeyConstraint baseTableName="room_media" baseColumnNames="room_id" constraintName="fk_room_media_hotel" referencedTableName="room"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="room_media" baseColumnNames="room_id" constraintName="fk_room_media_room" referencedTableName="room"
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
         <addForeignKeyConstraint baseTableName="room_media" baseColumnNames="media_id" constraintName="fk_room_media_media" referencedTableName="media"
-                                 referencedColumnNames="id"/>
+                                 referencedColumnNames="id" onDelete="CASCADE"/>
     </changeSet>
 </databaseChangeLog>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+    <changeSet id="2025-14-09-010-create-index" author="Dywinar">
+        <createIndex tableName="room_media" indexName="idx_room_media_room_id">
+            <column name="room_id"/>
+        </createIndex>
+        <createIndex tableName="hotel_media" indexName="idx_hotel_media_hotel_id">
+            <column name="hotel_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
