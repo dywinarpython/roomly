@@ -269,10 +269,10 @@ class RoomlyApplicationTests {
 	(Media deletion is delayed for the duration of the handler, let's check media deletion as a search for null values in the RoomMedia table.)
 	 */
 	@Test
-	@DisplayName("ПРОВЕРКА DELETE /api/v1/room/{id}")
+	@DisplayName("ПРОВЕРКА DELETE /api/v1/room/{id}/media")
 	void testDeleteRoom() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
-				.delete("/api/v1/room/" + testRoom.getId())
+				.delete("/api/v1/room/" + testRoom.getId() + "/media")
 				.with(jwt().jwt(builder ->
 						builder.claim("sub", testHotel.getOwner().toString())))
 
@@ -407,7 +407,7 @@ class RoomlyApplicationTests {
 				.with(jwt().jwt(builder -> builder.claim("sub", testHotel.getOwner().toString()))
 		)).andExpect(status().isOk());
 
-		Optional<Hotel> setHotelTestOptional = hotelRepository.findById(testRoom.getId());
+		Optional<Hotel> setHotelTestOptional = hotelRepository.findById(testHotel.getId());
 		Assertions.assertFalse(setHotelTestOptional.isEmpty());
 		Hotel setHotel = setHotelTestOptional.get();
 		Assertions.assertEquals(setHotel.getName(), setHotelDto.name());
@@ -514,10 +514,10 @@ class RoomlyApplicationTests {
 	(Media deletion is delayed for the duration of the handler, let's check media deletion as a search for null values in the HotelMedia table.)
 	 */
 	@Test
-	@DisplayName("Проверка DELETE /api/v1/hotel/{id}")
+	@DisplayName("Проверка DELETE /api/v1/hotel/{id}/media")
 	void testDeleteMediaHotel() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
-				.delete("/api/v1/hotel/" + testHotel.getId())
+				.delete("/api/v1/hotel/" + testHotel.getId() + "/media")
 				.param("keyMedia", testHotel.getMedia().getFirst().getUrl())
 				.with(jwt().jwt(builder ->
 						builder.claim("sub", testHotel.getOwner().toString())))

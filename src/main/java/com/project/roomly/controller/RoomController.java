@@ -95,7 +95,7 @@ public class RoomController {
             summary = "Удаление медиа номера",
             responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Map.class)))
     )
-    @DeleteMapping("/{id}/")
+    @DeleteMapping("/{id}/media")
     public ResponseEntity<Map<String, String>> deleteMediaRoom(@PathVariable Long id, @RequestParam("keyMedia") String keyMedia, @AuthenticationPrincipal Jwt jwt){
         roomService.deleteMedia(keyMedia, id, jwt.getSubject());
         return ResponseEntity.ok(Map.of("message", "Media is deleted"));

@@ -169,7 +169,7 @@ public class RoomServiceImpl implements RoomService {
             }
         }
         if(!exists){
-            if(roomMediaRepository.existsById(roomId)){
+            if(roomRepository.existsById(roomId)){
                 throw new AccessDeniedException("Access is denied");
             } else {
                 throw new NoSuchElementException("Room or media is not found!");
