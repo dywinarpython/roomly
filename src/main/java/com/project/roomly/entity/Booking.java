@@ -22,8 +22,10 @@ public class Booking {
     private Long id;
 
 
+    @Column(name = "create_time", nullable = false)
     private LocalDateTime createTime;
 
+    @Column(name = "user_id", nullable = false)
     private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -7,8 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "hotel")
@@ -25,6 +24,10 @@ public class Hotel {
     private String name;
 
     @Column(nullable = false)
+    private String city;
+
+
+    @Column(nullable = false)
     private String address;
 
     @Column(nullable = false)
@@ -35,12 +38,12 @@ public class Hotel {
     @Max(100)
     private Integer prepaymentPercentage;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "hotel")
+    private List<Room> roomList = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "hotel_media",
-            joinColumns = @JoinColumn(name = "hotel_id"),
-            inverseJoinColumns = @JoinColumn(name = "media_id")
-    )
-    private Set<Media> media;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private List<HotelMedia> media = new ArrayList<>();
+
+
 }
