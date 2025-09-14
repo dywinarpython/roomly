@@ -272,7 +272,7 @@ class RoomlyApplicationTests {
 	@DisplayName("ПРОВЕРКА DELETE /api/v1/room/{id}/media")
 	void testDeleteRoom() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
-				.delete("/api/v1/room/" + testRoom.getId() + "/media")
+				.delete("/api/v1/room/" + testRoom.getId())
 				.with(jwt().jwt(builder ->
 						builder.claim("sub", testHotel.getOwner().toString())))
 
