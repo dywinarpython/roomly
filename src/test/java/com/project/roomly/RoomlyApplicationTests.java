@@ -14,6 +14,7 @@ import com.project.roomly.dto.Room.SetRoomDto;
 import com.project.roomly.entity.*;
 import com.project.roomly.repository.*;
 import com.project.roomly.scheduler.MediaScheduler;
+import org.apache.tika.Tika;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -81,6 +83,9 @@ class RoomlyApplicationTests {
 
 	@MockitoBean
 	private MediaScheduler mediaScheduler;
+
+	@MockitoBean
+	private Tika tika;
 
 	@Value("${pageable.size}")
 	private Integer pageableSize;
@@ -137,6 +142,11 @@ class RoomlyApplicationTests {
 	@DisplayName("ПРОВЕРКА POST /api/v1/room")
 	void testCreateRoom() throws Exception {
 		when(s3Client.putObject( any(PutObjectRequest.class), any(RequestBody.class))).thenReturn(null);
+		/*
+		Поскольку проверяются типы отправленных файлов, мы мокаем объект, который проверяет это.
+		Since the types of files sent are being checked, we mock an object that verifies this.
+		 */
+		when(tika.detect(any(InputStream.class))).thenReturn("png");
 
 		RoomDto roomDto = new RoomDto("комната", testHotel.getId(), "Описание комнаты", 10, 10, BigDecimal.valueOf(1200));
 
@@ -229,6 +239,11 @@ class RoomlyApplicationTests {
 	@DisplayName("ПРОВЕРКА POST /api/v1/room/{id}")
 	void testAddMedia() throws Exception {
 		when(s3Client.putObject( any(PutObjectRequest.class), any(RequestBody.class))).thenReturn(null);
+		/*
+		Поскольку проверяются типы отправленных файлов, мы мокаем объект, который проверяет это.
+		Since the types of files sent are being checked, we mock an object that verifies this.
+		 */
+		when(tika.detect(any(InputStream.class))).thenReturn("png");
 		MockMultipartFile mediaPart1 = new MockMultipartFile(
 				"media",
 				"testMedia",
@@ -340,6 +355,11 @@ class RoomlyApplicationTests {
 	@DisplayName("Проверка POST /api/v1/hotel")
 	void testCreateHotel() throws Exception{
 		when(s3Client.putObject( any(PutObjectRequest.class), any(RequestBody.class))).thenReturn(null);
+		/*
+		Поскольку проверяются типы отправленных файлов, мы мокаем объект, который проверяет это.
+		Since the types of files sent are being checked, we mock an object that verifies this.
+		 */
+		when(tika.detect(any(InputStream.class))).thenReturn("png");
 		RequestHotelDto requestHotelDto = new RequestHotelDto("Отель", "Москва", "ул. Московская 1", 10);
 		String hotelJson = objectMapper.writeValueAsString(requestHotelDto);
 
@@ -399,8 +419,11 @@ class RoomlyApplicationTests {
 	@Test
 	@DisplayName("Проверка POST /api/v1/hotel/{id}")
 	void testAddMediaHotel() throws Exception {
-
-
+		/*
+		Поскольку проверяются типы отправленных файлов, мы мокаем объект, который проверяет это.
+		Since the types of files sent are being checked, we mock an object that verifies this.
+		 */
+		when(tika.detect(any(InputStream.class))).thenReturn("png");
 		MockMultipartFile mediaPart1 = new MockMultipartFile(
 				"media",
 				"testMedia",

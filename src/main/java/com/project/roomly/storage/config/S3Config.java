@@ -1,6 +1,7 @@
 package com.project.roomly.storage.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,5 +33,10 @@ public class S3Config {
                         .checksumValidationEnabled(false)
                         .build())
                 .build();
+    }
+
+    @Bean
+    public Tika tika(){
+        return new Tika();
     }
 }
